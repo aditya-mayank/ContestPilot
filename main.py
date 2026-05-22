@@ -6,6 +6,7 @@ from contestpilot.fetchers import sync_all_fetchers
 from contestpilot.calendar_sync import sync_calendar
 from contestpilot.email_sync import process_email_notifications
 from contestpilot.setup_email import run_email_setup
+from contestpilot.attendance_verifier import run_auto_verification
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
@@ -30,14 +31,30 @@ def run_setup_wizard():
     set_preference('timezone', local_tz)
     print(f" ✅ Auto-detected timezone: {local_tz}")
     
-    print("\n[1.5/4] Platform Selection")
+    print("\n[1.5/4] Platform Selection & Usernames")
     print(" Which contest platforms do you want to track? (y/n)")
     platforms = []
-    if input(" - LeetCode? (y/N): ").strip().lower() == 'y': platforms.append('leetcode')
-    if input(" - Codeforces? (y/N): ").strip().lower() == 'y': platforms.append('codeforces')
+    
+    lc_ans = input(" - LeetCode? (y/N): ").strip().lower()
+    if lc_ans == 'y': 
+        platforms.append('leetcode')
+        handle = input("   Enter LeetCode username (for auto-verification) or press Enter to skip: ").strip()
+        if handle: set_preference('leetcode_handle', handle)
+        
+    cf_ans = input(" - Codeforces? (y/N): ").strip().lower()
+    if cf_ans == 'y': 
+        platforms.append('codeforces')
+        handle = input("   Enter Codeforces handle (for auto-verification) or press Enter to skip: ").strip()
+        if handle: set_preference('codeforces_handle', handle)
+        
     if input(" - CodeChef? (y/N): ").strip().lower() == 'y': platforms.append('codechef')
     if input(" - HackerRank? (y/N): ").strip().lower() == 'y': platforms.append('hackerrank')
-    if input(" - AtCoder? (y/N): ").strip().lower() == 'y': platforms.append('atcoder')
+    
+    ac_ans = input(" - AtCoder? (y/N): ").strip().lower()
+    if ac_ans == 'y': 
+        platforms.append('atcoder')
+        handle = input("   Enter AtCoder username (for auto-verification) or press Enter to skip: ").strip()
+        if handle: set_preference('atcoder_handle', handle)
     
     if not platforms:
         print(" [Warning] No platforms selected. Defaulting to LeetCode and Codeforces.")
@@ -116,6 +133,10 @@ def main():
     # Step 2: Push to Google Calendar
     print("\n[ContestPilot] Starting Google Calendar sync...")
     sync_calendar()
+    
+    # Step 3: Auto-Verify Attendance for past contests
+    print("\n[ContestPilot] Auto-verifying recent contest attendance...")
+    run_auto_verification()
     
     # Step 4: Send Email Notifications (this marks notifications as sent)
     process_email_notifications()
