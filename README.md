@@ -1,144 +1,91 @@
-# 🏆 ContestPilot — Your Autonomous CP Scheduler & Coach
-Python • Google Calendar • GitHub Actions • SQLite
+# 🏆 ContestPilot
 
-Never miss a Codeforces, CodeChef, LeetCode, or AtCoder contest again — fully automated, with built-in analytics and email reports!
+Your Autonomous Competitive Programming Scheduler & Coach.
 
----
+Never miss a Codeforces, CodeChef, LeetCode, or AtCoder contest again. ContestPilot is fully automated, with built-in analytics, auto-verification, and email reports!
 
 ## 📌 About the Project
-**ContestPilot** is a powerful Python-based automation agent designed for Competitive Programmers. It natively fetches upcoming contests from top competitive programming platforms, pushes them directly to your Google Calendar, and tracks your attendance.
 
-Unlike traditional scripts, ContestPilot **does not require external API keys** like Clist.by. It features an interactive CLI wizard that sets up a local database, connects to your Google Calendar via OAuth, installs a silent Windows background task, and even emails you weekly CP analytical reports tracking your active streak!
+ContestPilot is a powerful Python automation agent designed for Competitive Programmers. It natively fetches upcoming contests from top platforms, pushes them directly to your Google Calendar, and tracks your attendance.
 
----
+Unlike traditional scripts, ContestPilot does not require external API keys like Clist.by. It features a completely zero-prompt setup wizard that creates a local database, connects to your Google Calendar via OAuth, installs a silent Windows background task, and emails you weekly analytical reports.
 
 ## ✨ Key Features
-- 🔄 **Native Fetchers:** Scrapes and fetches directly from official LeetCode, Codeforces, CodeChef, and AtCoder endpoints. **Zero API keys needed.**
-- 📅 **Smart Google Calendar Sync:** Events are added directly to your primary calendar. If a platform reschedules a contest, ContestPilot automatically detects the change and updates the existing event.
-- 🎯 **Attendance Auto-Verification:** Enter your platform handles during setup, and ContestPilot will automatically check if you attended the contest, maintaining your Weekly Streak!
-- 📧 **Automated Email Summaries:** Receive a beautiful "Weekly CP Report" in your inbox tracking your streak, platform breakdown, and upcoming schedule.
-- 🤖 **Local Background Task:** Includes a one-click installer to run silently in the background on Windows every morning at 8:00 AM.
-- ☁️ **Cloud Ready:** Pre-configured for GitHub Actions to run 24/7 autonomously in the cloud without needing your PC.
-- 🔒 **Secure Local Database:** Uses a local SQLite database (`contestpilot.db`) to cache history, track streaks, and prevent duplicate notifications.
 
----
+* **Native Fetchers**: Scrapes directly from official LeetCode, Codeforces, CodeChef, and AtCoder endpoints. Zero API keys needed.
+* **Smart Calendar Sync**: Events are added to your Google Calendar. If a platform reschedules a contest, ContestPilot automatically detects the change and updates the event instead of duplicating it.
+* **Attendance Auto-Verification**: Enter your handles during setup, and ContestPilot automatically checks if you attended the contest to maintain your streak!
+* **Automated Email Summaries**: Receive a beautiful "Weekly CP Report" in your inbox tracking your streak, platform breakdown, and schedule.
+* **Local Background Task**: Automatically installs a silent Windows background task to run invisibly twice a day (2:00 AM and 2:00 PM) to avoid overlapping with contest hours.
+* **Secure Local Database**: Uses a local SQLite database to cache history, track streaks, and prevent duplicate notifications.
 
-## 🗂️ Project Structure
-```text
-ContestPilot/
-├── .github/
-│   └── workflows/
-│       └── daily_sync.yml      # GitHub Actions workflow (runs daily)
-├── contestpilot/               # Core Application Package
-│   ├── analytics.py            # Calculates streaks, platform breakdowns, and attendance
-│   ├── calendar_sync.py        # Handles Google Calendar OAuth & event upserts
-│   ├── database.py             # SQLite wrapper for preferences and contest history
-│   ├── email_sync.py           # Constructs and sends weekly/daily email reports
-│   ├── fetchers.py             # Native API scrapers for LC, CF, CC, and AtCoder
-│   └── utils.py                # Helpers for timezone and cache management
-├── main.py                     # Entry point — orchestrates the setup wizard and sync flow
-├── run.bat                     # Easy-execution batch script for Windows users
-├── requirements.txt            # Python dependencies
-└── .gitignore                  # Excludes databases and secrets (token.json, credentials.json)
-```
+## 🚀 Getting Started (Zero-Prompt Setup)
 
----
-
-## 🚀 Running Locally (Step-by-Step)
-Follow these steps to run the project on your own machine. ContestPilot features a built-in wizard, making setup incredibly easy.
+ContestPilot features a completely automated wizard. You do not need to manually install dependencies or create virtual environments.
 
 ### Prerequisites
-- Python 3.10 or higher
-- A Google account
 
-### Step 1 — Clone the Repository
+* Python 3.10 or higher installed on your PC.
+* A Google account.
+
+### Step 1: Download the Project
+
+Clone the repository to your computer:
 ```bash
 git clone https://github.com/aditya-mayank/ContestPilot.git
 cd ContestPilot
 ```
 
-### Step 2 — Run the Setup Wizard
-You do **not** need to manually install dependencies or create a virtual environment. ContestPilot handles this for you.
+### Step 2: Get Google Calendar Permissions
 
-On Windows, simply double-click **`run.bat`** or run:
-```bash
-.\run.bat
-```
+Since ContestPilot adds events directly to your personal calendar, you need to grant it permission through Google Cloud:
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new Project and search for **Google Calendar API**. Click **Enable**.
+3. Go to **Credentials** on the left sidebar.
+4. Click **Create Credentials** then **OAuth client ID**. (Select "Desktop App" as the application type).
+5. Download the JSON file it gives you.
+6. Rename that downloaded file to exactly `credentials.json` and move it directly into your `ContestPilot` folder.
 
-The script will automatically create a virtual environment (`.venv`), install `requirements.txt`, and launch the interactive wizard.
+### Step 3: The One-Click Setup
 
-### Step 3 — Answer the Wizard Prompts
-The wizard will initialize your local SQLite database and ask:
-1. Which platforms you want to track (LeetCode, Codeforces, CodeChef, AtCoder).
-2. Your usernames/handles for those platforms (for Auto-Verification).
-3. If you want to enable Weekly Email Alerts (requires a Gmail address and an App Password).
-4. If you want to install a local Windows Scheduled Task to run silently in the background every morning.
+1. Double-click the `run.bat` file.
+2. The terminal will open and automatically create a virtual environment and install all required packages.
+3. The Setup Wizard will begin its 5 steps:
+   * **1/5**: Automatically detects your timezone and sets up the databases.
+   * **2/5**: Asks for your platform handles for auto-verification (CodeChef must be reviewed manually).
+   * **3/5**: Opens a browser asking you to log into your Google Account. Click **Allow**.
+   * **4/5**: Asks if you want to configure weekly Email Alerts.
+   * **5/5**: Installs the silent background task.
+4. It will then fetch your contests, sync your calendar, and print your personal CP Stats!
 
-### Step 4 — Authenticate with Google Calendar
-During the wizard, a browser window will automatically open asking you to log in to your Google account.
-1. Sign in and grant Calendar access.
-2. A `token.json` file will be generated in your folder automatically. 
-3. The script will instantly sync all upcoming contests to your calendar!
+## ⚡ Quick Actions
 
-*(Note: ContestPilot requires a `credentials.json` file to identify the app to Google. If you are setting this up from scratch on a fork, see the "Google Cloud Setup" section below.)*
+For the best user experience, your project contains a `Quick_Actions` folder. Inside, you will find 6 easy double-click launcher files so you never have to type commands again:
 
----
-
-## 🛠️ Advanced CLI Commands
-Once setup is complete, ContestPilot runs entirely in the background. However, you can interact with your data manually at any time:
-
-- `.\run.bat --stats` : Generates your personal CP Report Card (Weekly Streak, Total Attended, Platform Breakdown).
-- `.\run.bat --review` : Interactively review unlogged contests for platforms that don't support auto-verification.
-- `.\run.bat --setup-email` : Configure optional daily/weekly summary emails.
-- `.\run.bat --stop-email` : Disable email notifications.
-- `.\run.bat --stop-all` : Uninstall the background scheduled task completely.
-
----
+* 🗑️ `clear_calendar.bat`: Instantly wipes all ContestPilot events from your calendar.
+* 📊 `view_stats.bat`: Displays your CP Report Card and current streak.
+* ⚙️ `configure_settings.bat`: Opens the wizard to update your Handles and Email preferences.
+* 🛑 `uninstall_and_stop.bat`: Instantly stops all background tasks and disables email alerts.
+* 🔄 `update_app.bat`: Automatically pulls the latest updates from GitHub.
+* 📝 `review_contests.bat`: Asks you if you attended past CodeChef contests so you can maintain your streak.
 
 ## ⚙️ Automating with GitHub Actions
-This repo is pre-configured to run automatically every day at midnight UTC via GitHub Actions — no local machine needed!
+
+This repo is pre-configured to run automatically every day at midnight UTC via GitHub Actions, meaning it can run 24/7 in the cloud without your PC!
 
 To set it up on your own fork:
-1. **Fork this repository.**
-2. Run the local setup (Steps 1-4 above) on your PC to generate your `token.json` file.
-3. Go to your GitHub fork → **Settings → Secrets and variables → Actions**.
+1. Fork this repository.
+2. Run the local setup (Steps 1-3 above) on your PC to generate your `token.json` file.
+3. Go to your GitHub fork, then **Settings**, then **Secrets and variables**, then **Actions**.
 4. Add the following secret:
-   - **Secret Name:** `GOOGLE_CALENDAR_TOKEN`
-   - **Secret Value:** Open your local `token.json` in Notepad, copy all the text, and paste it here.
+   * **Name**: `GOOGLE_CALENDAR_TOKEN`
+   * **Value**: Open your local `token.json` in Notepad, copy all the text, and paste it here.
 5. Go to the **Actions** tab on your GitHub repo and click "Enable Workflows".
 
-The workflow in `.github/workflows/daily_sync.yml` will now run automatically every day! ✅
-
----
-
-## 🔑 Google Cloud Setup (For Forkers)
-If you are forking this repo to build your own version, you will need your own Google Cloud `credentials.json` file:
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
-2. Create a new project.
-3. Navigate to **APIs & Services → Enable APIs and Services** and enable the **Google Calendar API**.
-4. Go to **OAuth consent screen**, choose **External**, fill in the details, and add the `.../auth/calendar.events` scope. Move the app to "In production".
-5. Go to **Credentials → Create Credentials → OAuth Client ID** (Application type: Desktop app).
-6. Download the JSON file, rename it to `credentials.json`, and place it in the root folder of ContestPilot.
-
----
-
 ## 🔒 Security Notes
-- `credentials.json`, `token.json`, and `contestpilot.db` are excluded from version control via `.gitignore`.
-- ContestPilot **never** asks for your actual Google password. It uses standard OAuth2 tokens.
-- For Email Summaries, it strictly requires a 16-character [Google App Password](https://myaccount.google.com/apppasswords), meaning your actual Gmail password is never touched.
-- When using GitHub Actions, all tokens are stored as encrypted GitHub Secrets.
 
----
+* `credentials.json`, `token.json`, and the local database are excluded from version control for your safety.
+* ContestPilot never asks for your actual Google password. It uses standard OAuth2 tokens.
+* For Email Summaries, it strictly requires a 16-character [Google App Password](https://myaccount.google.com/apppasswords), meaning your actual Gmail password is never touched.
 
-## 💻 Built With
-| Tech | Purpose |
-|------|---------|
-| **Python 3.12** | Core application logic |
-| **SQLite3** | Local database for caching history & streaks |
-| **Google Calendar API** | OAuth2 Calendar event management |
-| **smtplib** | Email summary distribution |
-| **GitHub Actions** | Autonomous cloud execution |
-| **Kenkoooo API / GraphQL** | Native backend fetching |
-
----
-*Happy Coding! Let ContestPilot handle the schedule while you handle the algorithms.*
+Happy Coding! Let ContestPilot handle the schedule while you handle the algorithms.
