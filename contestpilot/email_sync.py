@@ -79,14 +79,14 @@ def send_periodic_summaries():
         conn.close()
         
         if rows:
-            from .analytics import get_streak
-            streak = get_streak()
+            from .analytics import generate_stats_report
+            stats_report = generate_stats_report()
             subject = "[ContestPilot] Weekly Summary: Upcoming Contests & Stats"
             body = f"You have {len(rows)} contests coming up this week:\n\n"
             for r in rows:
                 body += f"- {r['name']} ({r['platform'].title()}) at {r['start_time']}\n"
             
-            body += f"\n🔥 Current Weekly Streak: {streak} weeks\n"
+            body += f"\n\n{stats_report}\n"
             body += "\n--\nHappy Coding!\nContestPilot\n\nTo stop receiving these emails, run '.\\run.bat --stop-email' on your machine."
             
             if send_email(subject, body):

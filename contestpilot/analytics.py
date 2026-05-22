@@ -148,8 +148,8 @@ def get_streak() -> int:
             
     return streak
 
-def print_stats():
-    """Generates and prints a beautiful analytics summary."""
+def generate_stats_report() -> str:
+    """Generates the analytics summary as a string."""
     conn = get_connection()
     cursor = conn.cursor()
     
@@ -179,18 +179,24 @@ def print_stats():
     
     conn.close()
     
-    print("\n=========================================")
-    print("      ContestPilot Personal Stats        ")
-    print("=========================================")
-    print(f"🔥 Current Weekly Streak: {streak} weeks")
-    print(f"🏆 Total Contests Attended: {total_attended}")
-    print(f"⚠️ Unreviewed/Missed Contests: {missed} (Run --review)")
+    lines = []
+    lines.append("=========================================")
+    lines.append("      ContestPilot Personal Stats        ")
+    lines.append("=========================================")
+    lines.append(f"🔥 Current Weekly Streak: {streak} weeks")
+    lines.append(f"🏆 Total Contests Attended: {total_attended}")
+    lines.append(f"⚠️ Unreviewed/Missed Contests: {missed} (Run --review)")
     
-    print("\n📊 Platform Breakdown:")
+    lines.append("\n📊 Platform Breakdown:")
     if platform_stats:
         for p in platform_stats:
-            print(f"   - {p['platform'].title()}: {p['count']} contests")
+            lines.append(f"   - {p['platform'].title()}: {p['count']} contests")
     else:
-        print("   - No data yet! Attend a contest first.")
+        lines.append("   - No data yet! Attend a contest first.")
     
-    print("=========================================\n")
+    lines.append("=========================================")
+    return "\n".join(lines)
+
+def print_stats():
+    """Prints a beautiful analytics summary to the console."""
+    print("\n" + generate_stats_report() + "\n")
