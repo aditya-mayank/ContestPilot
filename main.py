@@ -51,10 +51,7 @@ def run_setup_wizard():
         platforms.append('codechef')
         print("   (Note: You will need to manually review attendance for CodeChef using '.\\run.bat --review')")
         
-    if input(" - HackerRank? (y/N): ").strip().lower() == 'y': 
-        platforms.append('hackerrank')
-        print("   (Note: You will need to manually review attendance for HackerRank using '.\\run.bat --review')")
-    
+
     ac_ans = input(" - AtCoder? (y/N): ").strip().lower()
     if ac_ans == 'y': 
         platforms.append('atcoder')

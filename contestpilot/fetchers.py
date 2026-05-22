@@ -74,61 +74,40 @@ class BaseFetcher:
         """Fetch and return normalized contests."""
         raise NotImplementedError
 
-class ClistFetcher(BaseFetcher):
-    platform_name = "clist"
+class CodeforcesFetcher(BaseFetcher):
+    platform_name = "codeforces"
 
     def fetch(self) -> List[Contest]:
-        api_key = get_preference('clist_api_key')
-        username = get_preference('clist_username')
-
-        if not api_key or not username:
-            logger.info("Clist.by API key or username missing in preferences. Skipping Clist fetch.")
-            logger.info("  -> (User Action: Set 'clist_api_key' and 'clist_username' if you want Clist support)")
+        enabled = get_preference('platforms') or ""
+        if 'codeforces' not in enabled:
             return []
-
-        url = "https://clist.by/api/v4/contest/"
-        now = datetime.datetime.now(datetime.timezone.utc)
-        params = {
-            "start__gt": now.isoformat(),
-            "order_by": "start",
-            "limit": "50"
-        }
-        headers = {
-            "Authorization": f"ApiKey {username}:{api_key}"
-        }
-
-        enabled = get_preference('platforms')
-        enabled_platforms = enabled.split(',') if enabled else []
-        
-        data = fetch_with_cache(url, headers=headers, params=params)
+            
+        url = "https://codeforces.com/api/contest.list"
+        data = fetch_with_cache(url)
         contests = []
-        if data and 'objects' in data:
-            for item in data['objects']:
-                resource = str(item.get('resource', '')).lower()
-                platform_name = "clist"
-                if "leetcode" in resource: platform_name = "leetcode"
-                elif "codeforces" in resource: platform_name = "codeforces"
-                elif "codechef" in resource: platform_name = "codechef"
-                elif "hackerrank" in resource: platform_name = "hackerrank"
-                elif "atcoder" in resource: platform_name = "atcoder"
-                else: continue # Remove every other contest
-
-                if platform_name not in enabled_platforms:
-                    continue
-
-                source_id = str(item.get('id'))
-                c = Contest(
-                    id=f"clist_{source_id}",
-                    source_id=source_id,
-                    name=item.get('event'),
-                    platform=platform_name,
-                    start_time=item.get('start'),
-                    end_time=item.get('end'),
-                    duration_seconds=item.get('duration'),
-                    url=item.get('href'),
-                    status="UPCOMING"
-                )
-                contests.append(c)
+        
+        if data and data.get('status') == 'OK':
+            for item in data.get('result', []):
+                if item.get('phase') == 'BEFORE':
+                    source_id = str(item.get('id'))
+                    duration = item.get('durationSeconds', 0)
+                    start_ts = item.get('startTimeSeconds', 0)
+                    if start_ts > 0:
+                        start_time = datetime.datetime.fromtimestamp(start_ts, datetime.timezone.utc)
+                        end_time = start_time + datetime.timedelta(seconds=duration)
+                        
+                        c = Contest(
+                            id=f"codeforces_{source_id}",
+                            source_id=source_id,
+                            name=item.get('name'),
+                            platform="codeforces",
+                            start_time=start_time.isoformat(),
+                            end_time=end_time.isoformat(),
+                            duration_seconds=duration,
+                            url=f"https://codeforces.com/contest/{source_id}",
+                            status="UPCOMING"
+                        )
+                        contests.append(c)
         return contests
 
 
@@ -169,42 +148,89 @@ class AtCoderFetcher(BaseFetcher):
                     contests.append(c)
         return contests
 
-class HackerRankFetcher(BaseFetcher):
-    platform_name = "hackerrank"
+class LeetCodeFetcher(BaseFetcher):
+    platform_name = "leetcode"
 
     def fetch(self) -> List[Contest]:
-        # HackerRank's undocumented but stable REST API
         enabled = get_preference('platforms') or ""
-        if 'hackerrank' not in enabled:
+        if 'leetcode' not in enabled:
             return []
             
-        url = "https://www.hackerrank.com/rest/contests/upcoming?limit=20"
-        data = fetch_with_cache(url)
-        contests = []
+        url = "https://leetcode.com/graphql"
+        query = {
+            "query": "{ allContests { title titleSlug startTime duration isVirtual } }"
+        }
         
-        if data and 'models' in data:
-            for item in data['models']:
-                source_id = str(item.get('id', item.get('slug')))
-                start_ts = item.get('epoch_starttime')
-                end_ts = item.get('epoch_endtime')
-                
-                if start_ts and end_ts:
+        session = get_requests_session()
+        try:
+            response = session.post(url, json=query, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+        except Exception as e:
+            logger.error(f"Failed to fetch {url}: {e}")
+            return []
+            
+        contests = []
+        now_ts = datetime.datetime.now(datetime.timezone.utc).timestamp()
+        
+        if data and 'data' in data and 'allContests' in data['data']:
+            for item in data['data']['allContests']:
+                if not item.get('isVirtual') and item.get('startTime', 0) > now_ts:
+                    source_id = item.get('titleSlug')
+                    duration = item.get('duration', 0)
+                    start_ts = item.get('startTime', 0)
+                    
                     start_time = datetime.datetime.fromtimestamp(start_ts, datetime.timezone.utc)
-                    end_time = datetime.datetime.fromtimestamp(end_ts, datetime.timezone.utc)
-                    duration = int(end_ts - start_ts)
+                    end_time = start_time + datetime.timedelta(seconds=duration)
                     
                     c = Contest(
-                        id=f"hackerrank_{source_id}",
+                        id=f"leetcode_{source_id}",
                         source_id=source_id,
-                        name=item.get('name'),
-                        platform="hackerrank",
+                        name=item.get('title'),
+                        platform="leetcode",
                         start_time=start_time.isoformat(),
                         end_time=end_time.isoformat(),
                         duration_seconds=duration,
-                        url=f"https://www.hackerrank.com/contests/{item.get('slug')}",
+                        url=f"https://leetcode.com/contest/{source_id}",
                         status="UPCOMING"
                     )
                     contests.append(c)
+        return contests
+
+class CodeChefFetcher(BaseFetcher):
+    platform_name = "codechef"
+
+    def fetch(self) -> List[Contest]:
+        enabled = get_preference('platforms') or ""
+        if 'codechef' not in enabled:
+            return []
+            
+        url = "https://www.codechef.com/api/list/contests/all"
+        data = fetch_with_cache(url)
+        contests = []
+        
+        if data and 'future_contests' in data:
+            for item in data['future_contests']:
+                source_id = item.get('contest_code')
+                try:
+                    start_time = datetime.datetime.fromisoformat(item.get('contest_start_date_iso'))
+                    end_time = datetime.datetime.fromisoformat(item.get('contest_end_date_iso'))
+                    duration = int((end_time - start_time).total_seconds())
+                except Exception:
+                    continue
+                    
+                c = Contest(
+                    id=f"codechef_{source_id}",
+                    source_id=source_id,
+                    name=item.get('contest_name'),
+                    platform="codechef",
+                    start_time=start_time.isoformat(),
+                    end_time=end_time.isoformat(),
+                    duration_seconds=duration,
+                    url=f"https://www.codechef.com/{source_id}",
+                    status="UPCOMING"
+                )
+                contests.append(c)
         return contests
 
 def sync_all_fetchers():
@@ -218,9 +244,10 @@ def sync_all_fetchers():
     conn.close()
 
     fetchers = [
-        ClistFetcher(),
-        AtCoderFetcher(),
-        HackerRankFetcher()
+        CodeforcesFetcher(),
+        LeetCodeFetcher(),
+        CodeChefFetcher(),
+        AtCoderFetcher()
     ]
     
     total_synced = 0
@@ -245,11 +272,13 @@ def sync_all_fetchers():
     canceled_ids = set(old_upcoming.keys()) - new_upcoming
     if canceled_ids:
         from .database import log_history
-        conn = get_connection()
-        cursor = conn.cursor()
         for cid in canceled_ids:
+            conn = get_connection()
+            cursor = conn.cursor()
             cursor.execute("SELECT name, platform, url, start_time FROM contests WHERE id = ?", (cid,))
             row = cursor.fetchone()
+            conn.close()
+            
             if row:
                 import datetime
                 from tzlocal import get_localzone
@@ -267,9 +296,11 @@ def sync_all_fetchers():
             log_history(cid, 'STATUS', 'UPCOMING', 'CANCELED')
             queue_notification('CANCELED', cid, msg)
             
+            conn = get_connection()
+            cursor = conn.cursor()
             cursor.execute("UPDATE contests SET status = 'CANCELED' WHERE id = ?", (cid,))
-        conn.commit()
-        conn.close()
+            conn.commit()
+            conn.close()
             
     from .analytics import log_sync
     log_sync(total_synced, 0, 0, len(canceled_ids))
