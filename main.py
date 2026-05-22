@@ -38,22 +38,27 @@ def run_setup_wizard():
     lc_ans = input(" - LeetCode? (y/N): ").strip().lower()
     if lc_ans == 'y': 
         platforms.append('leetcode')
-        handle = input("   Enter LeetCode username (for auto-verification) or press Enter to skip: ").strip()
+        handle = input("   Enter LeetCode username (optional, for auto-verification): ").strip()
         if handle: set_preference('leetcode_handle', handle)
         
     cf_ans = input(" - Codeforces? (y/N): ").strip().lower()
     if cf_ans == 'y': 
         platforms.append('codeforces')
-        handle = input("   Enter Codeforces handle (for auto-verification) or press Enter to skip: ").strip()
+        handle = input("   Enter Codeforces handle (optional, for auto-verification): ").strip()
         if handle: set_preference('codeforces_handle', handle)
         
-    if input(" - CodeChef? (y/N): ").strip().lower() == 'y': platforms.append('codechef')
-    if input(" - HackerRank? (y/N): ").strip().lower() == 'y': platforms.append('hackerrank')
+    if input(" - CodeChef? (y/N): ").strip().lower() == 'y': 
+        platforms.append('codechef')
+        print("   (Note: You will need to manually review attendance for CodeChef using '.\\run.bat --review')")
+        
+    if input(" - HackerRank? (y/N): ").strip().lower() == 'y': 
+        platforms.append('hackerrank')
+        print("   (Note: You will need to manually review attendance for HackerRank using '.\\run.bat --review')")
     
     ac_ans = input(" - AtCoder? (y/N): ").strip().lower()
     if ac_ans == 'y': 
         platforms.append('atcoder')
-        handle = input("   Enter AtCoder username (for auto-verification) or press Enter to skip: ").strip()
+        handle = input("   Enter AtCoder username (optional, for auto-verification): ").strip()
         if handle: set_preference('atcoder_handle', handle)
     
     if not platforms:
@@ -68,8 +73,8 @@ def run_setup_wizard():
         print(" ContestPilot needs permission to add events to your Calendar.")
         print(" A browser window will now open. Please sign in with Google.")
         input(" Press Enter to open the browser... ")
-        from contestpilot.calendar_sync import authenticate_google
-        authenticate_google()
+        from contestpilot.calendar_sync import get_credentials
+        get_credentials()
         print(" ✅ Calendar connected successfully.")
     else:
         print(" ✅ Calendar already connected (token.json found).")
