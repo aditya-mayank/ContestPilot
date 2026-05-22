@@ -245,16 +245,31 @@ def sync_all_fetchers():
     canceled_ids = set(old_upcoming.keys()) - new_upcoming
     if canceled_ids:
         from .database import log_history
+        conn = get_connection()
+        cursor = conn.cursor()
         for cid in canceled_ids:
-            name = old_upcoming[cid]
+            cursor.execute("SELECT name, platform, url, start_time FROM contests WHERE id = ?", (cid,))
+            row = cursor.fetchone()
+            if row:
+                import datetime
+                from tzlocal import get_localzone
+                try:
+                    start_dt = datetime.datetime.fromisoformat(row['start_time'].replace('Z', '+00:00'))
+                    local_tz = get_localzone()
+                    start_local = start_dt.astimezone(local_tz).strftime('%b %d, %I:%M %p')
+                except Exception:
+                    start_local = row['start_time']
+                
+                msg = f"Contest canceled or removed: {row['name']}\nPlatform: {row['platform'].title()}\nScheduled for: {start_local}\nLink: {row['url']}"
+            else:
+                msg = f"Contest canceled or removed: {old_upcoming[cid]}"
+                
             log_history(cid, 'STATUS', 'UPCOMING', 'CANCELED')
-            queue_notification('CANCELED', cid, f"Contest canceled or removed: {name}")
+            queue_notification('CANCELED', cid, msg)
             
-            conn = get_connection()
-            cursor = conn.cursor()
             cursor.execute("UPDATE contests SET status = 'CANCELED' WHERE id = ?", (cid,))
-            conn.commit()
-            conn.close()
+        conn.commit()
+        conn.close()
             
     from .analytics import log_sync
     log_sync(total_synced, 0, 0, len(canceled_ids))

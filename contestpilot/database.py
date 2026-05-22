@@ -189,15 +189,28 @@ def save_contest(contest: Contest):
     cursor.execute('SELECT name, start_time FROM contests WHERE id = ?', (contest.id,))
     row = cursor.fetchone()
     
+    # Format the time nicely
+    import datetime
+    from tzlocal import get_localzone
+    try:
+        start_dt = datetime.datetime.fromisoformat(contest.start_time.replace('Z', '+00:00'))
+        local_tz = get_localzone()
+        start_local = start_dt.astimezone(local_tz).strftime('%b %d, %I:%M %p')
+    except Exception:
+        start_local = contest.start_time
+
     if not row:
-        queue_notification('ADDED', contest.id, f"New contest added: {contest.name}")
+        msg = f"New contest added: {contest.name}\nPlatform: {contest.platform.title()}\nTime: {start_local}\nLink: {contest.url}"
+        queue_notification('ADDED', contest.id, msg)
     else:
         if row['start_time'] != contest.start_time:
             log_history(contest.id, 'TIME', row['start_time'], contest.start_time)
-            queue_notification('UPDATED', contest.id, f"Contest time updated: {contest.name} (New time: {contest.start_time})")
+            msg = f"Contest time updated: {contest.name}\nPlatform: {contest.platform.title()}\nNew Time: {start_local}\nLink: {contest.url}"
+            queue_notification('UPDATED', contest.id, msg)
         if row['name'] != contest.name:
             log_history(contest.id, 'TITLE', row['name'], contest.name)
-            queue_notification('UPDATED', contest.id, f"Contest title changed: from '{row['name']}' to '{contest.name}'")
+            msg = f"Contest title changed: from '{row['name']}' to '{contest.name}'\nPlatform: {contest.platform.title()}\nTime: {start_local}\nLink: {contest.url}"
+            queue_notification('UPDATED', contest.id, msg)
         
     cursor.execute('''
         INSERT INTO contests (id, source_id, name, platform, start_time, end_time, duration_seconds, url, status, calendar_event_id)
