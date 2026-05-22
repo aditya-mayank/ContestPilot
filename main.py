@@ -79,6 +79,25 @@ def run_setup_wizard():
         run_email_setup()
     else:
         print(" ⏭️  Skipped. You can always set this up later using '.\\run.bat --setup-email'")
+        
+    print("\n[4/4] Local Background Automation")
+    print(" For ContestPilot to be fully autonomous, it needs to run automatically in the background.")
+    print(" If you plan to use GitHub Actions instead, you can skip this.")
+    ans = input(" Install a scheduled task to run silently every day at 8:00 AM? (y/N): ").strip().lower()
+    if ans == 'y':
+        import os
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # In a real environment __file__ in main.py points to ContestPilot/main.py, so dirname is ContestPilot
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        vbs_path = os.path.join(base_dir, 'run_invisible.vbs')
+        bat_path = os.path.join(base_dir, 'run.bat')
+        
+        # We pass --background so it doesn't pause
+        cmd = f'schtasks /create /tn "ContestPilotDaily" /tr "wscript.exe \\"{vbs_path}\\" \\"{bat_path}\\" --background" /sc daily /st 08:00 /f'
+        os.system(cmd)
+        print(" ✅ Background task installed! It will run invisibly every morning.")
+    else:
+        print(" ⏭️  Skipped.")
 
     print("\n=========================================")
     print(" 🎉 Setup Complete! You are ready to go.")

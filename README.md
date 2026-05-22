@@ -5,6 +5,7 @@ Your ultra-lightweight, zero-config Competitive Programming assistant. ContestPi
 ## ✨ Features
 
 - **Zero-Config Setup**: Double-click `run.bat` and you're done. No API keys, no editing files.
+- **Auto-Verification**: Enter your handles and ContestPilot automatically marks your attendance!
 - **Smart Filtering**: Automatically filters out contests during your busy/quiet hours.
 - **Calendar Sync**: Upserts events directly to your Google Calendar with direct links.
 - **Personal Coach**: Tracks your active weekly streak and provides platform breakdown stats.
@@ -16,19 +17,19 @@ Your ultra-lightweight, zero-config Competitive Programming assistant. ContestPi
 2. **Double-click `run.bat`**.
 
 That's literally it! The onboarding wizard will automatically:
-- Create your database
-- Detect your local timezone
-- Prompt you to select your favorite platforms (LeetCode, Codeforces, AtCoder, etc.)
+- Create your database & detect your timezone.
+- Prompt you to select your favorite platforms (LeetCode, Codeforces, AtCoder, etc.) and usernames.
 - Open a browser to connect your Google Calendar.
+- Ask if you want Email summaries or local background automation.
 - Sync everything instantly.
 
 ### Advanced CLI Commands
 
-ContestPilot runs silently, but if you want to use the Personal Assistant features:
-- `.\run.bat --review` : Interactively review your recent unlogged contests (Did you attend? y/n).
-- `.\run.bat --attend <name>` : Quick shortcut to mark a contest as attended.
+ContestPilot runs silently, but you can interact with it at any time:
 - `.\run.bat --stats` : View your current Weekly Streak, total contests attended, and platform breakdown.
+- `.\run.bat --review` : Interactively review unlogged contests (for platforms without auto-verification).
 - `.\run.bat --setup-email` : Configure optional daily/weekly summary emails.
+- `.\run.bat --stop-all` : Completely uninstall the background scheduled task and disable emails.
 
 ## ☁️ Running in the Cloud (GitHub Actions)
 

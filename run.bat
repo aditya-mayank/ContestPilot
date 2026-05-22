@@ -30,5 +30,7 @@ pip install -r requirements.txt -q
 echo [ContestPilot] Running application...
 .\.venv\Scripts\python main.py %*
 
-echo [ContestPilot] Done.
-pause
+if "%1"=="" (
+    echo [ContestPilot] Done.
+    pause
+)
