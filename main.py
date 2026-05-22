@@ -63,13 +63,16 @@ def run_setup_wizard():
     set_preference('platforms', ','.join(platforms))
     
     print("\n[2/4] Google Calendar Connection")
-    print(" ContestPilot needs permission to add events to your Calendar.")
-    print(" A browser window will now open. Please sign in with Google.")
-    input(" Press Enter to open the browser...")
-    
-    from contestpilot.calendar_sync import get_credentials
-    get_credentials()
-    print(" ✅ Calendar connected successfully.")
+    import os
+    if not os.path.exists('token.json'):
+        print(" ContestPilot needs permission to add events to your Calendar.")
+        print(" A browser window will now open. Please sign in with Google.")
+        input(" Press Enter to open the browser... ")
+        from contestpilot.calendar_sync import authenticate_google
+        authenticate_google()
+        print(" ✅ Calendar connected successfully.")
+    else:
+        print(" ✅ Calendar already connected (token.json found).")
     
     print("\n[3/4] Email Notifications (Optional)")
     print(" ContestPilot can send you beautiful Daily/Weekly summaries")
@@ -91,10 +94,10 @@ def run_setup_wizard():
         vbs_path = os.path.join(base_dir, 'run_invisible.vbs')
         bat_path = os.path.join(base_dir, 'run.bat')
         
-        # We pass --background so it doesn't pause
-        cmd = f'schtasks /create /tn "ContestPilotDaily" /tr "wscript.exe \\"{vbs_path}\\" \\"{bat_path}\\" --background" /sc daily /st 08:00 /f'
+        # We use PowerShell which handles paths with spaces better and doesn't prompt/hang
+        cmd = f'powershell -Command "Register-ScheduledTask -TaskName \'ContestPilotDaily\' -Trigger (New-ScheduledTaskTrigger -Daily -At 8am) -Action (New-ScheduledTaskAction -Execute \'wscript.exe\' -Argument \'\\"{vbs_path}\\" \\"{bat_path} --background\\"\') -Force"'
         try:
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=15)
             if result.returncode == 0:
                 print(" ✅ Background task installed! It will run invisibly every morning.")
             else:
