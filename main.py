@@ -38,13 +38,13 @@ def run_setup_wizard():
     lc_ans = input(" - LeetCode? (y/N): ").strip().lower()
     if lc_ans == 'y': 
         platforms.append('leetcode')
-        handle = input("   Enter LeetCode username (optional, for auto-verification): ").strip()
+        handle = input("   Enter LeetCode username (for auto-verification): ").strip()
         if handle: set_preference('leetcode_handle', handle)
         
     cf_ans = input(" - Codeforces? (y/N): ").strip().lower()
     if cf_ans == 'y': 
         platforms.append('codeforces')
-        handle = input("   Enter Codeforces handle (optional, for auto-verification): ").strip()
+        handle = input("   Enter Codeforces handle (for auto-verification): ").strip()
         if handle: set_preference('codeforces_handle', handle)
         
     if input(" - CodeChef? (y/N): ").strip().lower() == 'y': 
@@ -58,7 +58,7 @@ def run_setup_wizard():
     ac_ans = input(" - AtCoder? (y/N): ").strip().lower()
     if ac_ans == 'y': 
         platforms.append('atcoder')
-        handle = input("   Enter AtCoder username (optional, for auto-verification): ").strip()
+        handle = input("   Enter AtCoder username (for auto-verification): ").strip()
         if handle: set_preference('atcoder_handle', handle)
     
     if not platforms:
