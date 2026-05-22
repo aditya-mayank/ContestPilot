@@ -77,12 +77,12 @@ def run_setup_wizard():
     vbs_path = os.path.join(base_dir, 'run_invisible.vbs')
     bat_path = os.path.join(base_dir, 'run.bat')
     
-    cmd = f'powershell -Command "Register-ScheduledTask -TaskName \'ContestPilotDaily\' -Trigger (New-ScheduledTaskTrigger -Daily -At 8am) -Action (New-ScheduledTaskAction -Execute \'wscript.exe\' -Argument \'\\"{vbs_path}\\" \\"{bat_path} --background\\"\') -Force"'
+    cmd = f'powershell -Command "$t1 = New-ScheduledTaskTrigger -Daily -At 2am; $t2 = New-ScheduledTaskTrigger -Daily -At 2pm; Register-ScheduledTask -TaskName \'ContestPilotDaily\' -Trigger $t1, $t2 -Action (New-ScheduledTaskAction -Execute \'wscript.exe\' -Argument \'\\"{vbs_path}\\" \\"{bat_path} --background\\"\') -Force"'
     try:
         # Run silently, do not capture or crash
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
         if result.returncode == 0:
-            print(" ✅ Background task installed! It will run invisibly every morning at 8:00 AM.")
+            print(" ✅ Background task installed! It will run invisibly twice a day (2:00 AM and 2:00 PM).")
         else:
             print(" ⚠️  Could not auto-install background task (run terminal as Administrator if you want it).")
     except Exception:
