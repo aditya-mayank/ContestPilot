@@ -43,6 +43,7 @@ def run_setup_wizard():
     
     print("\n[2/5] Auto-Verification Handles (Optional)")
     print(" Leave blank to skip.")
+    print(" (Note: CodeChef does not provide a public API for auto-verification, so you will need to mark them manually via --review)")
     handle = input(" - LeetCode username: ").strip()
     if handle: set_preference('leetcode_handle', handle)
     
@@ -108,11 +109,17 @@ def main():
         os.system('schtasks /delete /tn "ContestPilotDaily" /f')
         print("[ContestPilot] Uninstalled successfully. The script will no longer run automatically.")
         return
+
+    if '--clear-calendar' in sys.argv:
+        from contestpilot.calendar_sync import clear_all_contests
+        clear_all_contests()
+        return
     if '--config' in sys.argv:
         print("\n=========================================")
         print("      🛠️ ContestPilot Configuration     ")
         print("=========================================")
         print("\n[1] Auto-Verification Handles")
+        print(" (Note: CodeChef does not provide a public API for auto-verification, so you will need to mark them manually via --review)")
         handle = input(" - Enter LeetCode username: ").strip()
         if handle: set_preference('leetcode_handle', handle)
         
