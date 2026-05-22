@@ -56,7 +56,6 @@ def fetch_with_cache(url: str, headers: Optional[Dict[str, str]] = None, params:
         headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 
     try:
-        logger.info(f"Fetching from network: {url}")
         session = get_requests_session()
         response = session.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
@@ -274,7 +273,7 @@ def sync_all_fetchers():
     new_upcoming = set()
     
     for fetcher in fetchers:
-        logger.info(f"Syncing platform: {fetcher.platform_name}...")
+        print(f" ⏳ Fetching {fetcher.platform_name.title()}...", end="", flush=True)
         try:
             contests = fetcher.fetch()
             for c in contests:
@@ -283,11 +282,9 @@ def sync_all_fetchers():
                 save_ranking(c.id, priority, reason)
                 new_upcoming.add(c.id)
             total_synced += len(contests)
-            if contests:
-                logger.info(f"  -> Saved {len(contests)} upcoming contests.")
+            print(f"\r ✅ Fetched {fetcher.platform_name.title()} ({len(contests)} contests)  ")
         except Exception as e:
-            logger.error(f"  -> Error fetching from {fetcher.platform_name}: {e}")
-            
+            print(f"\r ❌ Failed {fetcher.platform_name.title()}: {e}         ")
     # Detect cancellations
     canceled_ids = set(old_upcoming.keys()) - new_upcoming
     if canceled_ids:
@@ -324,4 +321,4 @@ def sync_all_fetchers():
             
     from .analytics import log_sync
     log_sync(total_synced, 0, 0, len(canceled_ids))
-    logger.info(f"Total {total_synced} contests successfully parsed and saved.")
+    print(f"\n 🏁 Sync Complete! Total {total_synced} contests processed.")

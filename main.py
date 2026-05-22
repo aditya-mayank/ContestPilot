@@ -1,5 +1,13 @@
 import logging
 import sys
+
+# Ensure UTF-8 output on Windows terminals to prevent emoji crashes
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except AttributeError:
+    pass
+
 from contestpilot.database import is_initialized, init_db, set_preference, get_preference
 from contestpilot.utils import get_local_timezone_str
 from contestpilot.fetchers import sync_all_fetchers
@@ -20,95 +28,64 @@ def run_setup_wizard():
     print("your priorities, sync them to your Google Calendar, and send")
     print("you summaries so you never miss a match!")
     print("-----------------------------------------")
-    print("\n[1/4] Initializing Engine...")
     
-    # 1. Initialize the database
+    print("\n[1/5] Initializing Engine...")
     init_db()
-    print(" ✅ Database created successfully.")
-
-    # 2. Store default preferences
+    
     local_tz = get_local_timezone_str()
     set_preference('timezone', local_tz)
     print(f" ✅ Auto-detected timezone: {local_tz}")
     
-    print("\n[1.5/4] Platform Selection & Usernames")
-    print(" Which contest platforms do you want to track? (y/n)")
-    platforms = []
-    
-    lc_ans = input(" - LeetCode? (y/N): ").strip().lower()
-    if lc_ans == 'y': 
-        platforms.append('leetcode')
-        handle = input("   Enter LeetCode username (for auto-verification): ").strip()
-        if handle: set_preference('leetcode_handle', handle)
-        
-    cf_ans = input(" - Codeforces? (y/N): ").strip().lower()
-    if cf_ans == 'y': 
-        platforms.append('codeforces')
-        handle = input("   Enter Codeforces handle (for auto-verification): ").strip()
-        if handle: set_preference('codeforces_handle', handle)
-        
-    if input(" - CodeChef? (y/N): ").strip().lower() == 'y': 
-        platforms.append('codechef')
-        print("   (Note: You will need to manually review attendance for CodeChef using '.\\run.bat --review')")
-        
-
-    ac_ans = input(" - AtCoder? (y/N): ").strip().lower()
-    if ac_ans == 'y': 
-        platforms.append('atcoder')
-        handle = input("   Enter AtCoder username (for auto-verification): ").strip()
-        if handle: set_preference('atcoder_handle', handle)
-    
-    if not platforms:
-        print(" [Warning] No platforms selected. Defaulting to LeetCode and Codeforces.")
-        platforms = ['leetcode', 'codeforces']
-    
+    # Enable all supported platforms by default
+    platforms = ['leetcode', 'codeforces', 'codechef', 'atcoder']
     set_preference('platforms', ','.join(platforms))
+    print(" ✅ Tracking enabled for: LeetCode, Codeforces, CodeChef, AtCoder")
     
-    print("\n[2/4] Google Calendar Connection")
+    print("\n[2/5] Auto-Verification Handles (Optional)")
+    print(" Leave blank to skip.")
+    handle = input(" - LeetCode username: ").strip()
+    if handle: set_preference('leetcode_handle', handle)
+    
+    handle = input(" - Codeforces handle: ").strip()
+    if handle: set_preference('codeforces_handle', handle)
+    
+    handle = input(" - AtCoder username: ").strip()
+    if handle: set_preference('atcoder_handle', handle)
+    
+    print("\n[3/5] Google Calendar Connection")
     import os
+    import time
     if not os.path.exists('token.json'):
         print(" ContestPilot needs permission to add events to your Calendar.")
-        print(" A browser window will now open. Please sign in with Google.")
-        input(" Press Enter to open the browser... ")
+        print(" Opening browser to connect Google Calendar...")
+        time.sleep(1) # Give user a second to read before browser opens
         from contestpilot.calendar_sync import get_credentials
         get_credentials()
         print(" ✅ Calendar connected successfully.")
     else:
-        print(" ✅ Calendar already connected (token.json found).")
-    
-    print("\n[3/4] Email Notifications (Optional)")
-    print(" ContestPilot can send you beautiful Daily/Weekly summaries")
-    print(" and alert you if a contest is canceled or moved.")
-    ans = input(" Do you want to configure Email alerts now? (y/N): ").strip().lower()
+        print(" ✅ Calendar already connected.")
+        
+    print("\n[4/5] Email Notifications (Optional)")
+    ans = input(" - Do you want to configure Weekly Email alerts? (y/N): ").strip().lower()
     if ans == 'y':
         run_email_setup()
-    else:
-        print(" ⏭️  Skipped. You can always set this up later using '.\\run.bat --setup-email'")
-        
-    print("\n[4/4] Local Background Automation")
-    print(" For ContestPilot to be fully autonomous, it needs to run automatically in the background.")
-    print(" If you plan to use GitHub Actions instead, you can skip this.")
-    ans = input(" Install a scheduled task to run silently every day at 8:00 AM? (y/N): ").strip().lower()
-    if ans == 'y':
-        import os
-        import subprocess
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        vbs_path = os.path.join(base_dir, 'run_invisible.vbs')
-        bat_path = os.path.join(base_dir, 'run.bat')
-        
-        # We use PowerShell which handles paths with spaces better and doesn't prompt/hang
-        cmd = f'powershell -Command "Register-ScheduledTask -TaskName \'ContestPilotDaily\' -Trigger (New-ScheduledTaskTrigger -Daily -At 8am) -Action (New-ScheduledTaskAction -Execute \'wscript.exe\' -Argument \'\\"{vbs_path}\\" \\"{bat_path} --background\\"\') -Force"'
-        try:
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=15)
-            if result.returncode == 0:
-                print(" ✅ Background task installed! It will run invisibly every morning.")
-            else:
-                print(f" ⚠️ Failed to install background task. Try running as Administrator.")
-                print(f" Error: {result.stderr.strip()}")
-        except Exception as e:
-            print(f" ⚠️ Failed to install background task: {e}")
-    else:
-        print(" ⏭️  Skipped.")
+
+    print("\n[5/5] Local Background Automation")
+    import subprocess
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    vbs_path = os.path.join(base_dir, 'run_invisible.vbs')
+    bat_path = os.path.join(base_dir, 'run.bat')
+    
+    cmd = f'powershell -Command "Register-ScheduledTask -TaskName \'ContestPilotDaily\' -Trigger (New-ScheduledTaskTrigger -Daily -At 8am) -Action (New-ScheduledTaskAction -Execute \'wscript.exe\' -Argument \'\\"{vbs_path}\\" \\"{bat_path} --background\\"\') -Force"'
+    try:
+        # Run silently, do not capture or crash
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+        if result.returncode == 0:
+            print(" ✅ Background task installed! It will run invisibly every morning at 8:00 AM.")
+        else:
+            print(" ⚠️  Could not auto-install background task (run terminal as Administrator if you want it).")
+    except Exception:
+        print(" ⚠️  Could not auto-install background task.")
 
     print("\n=========================================")
     print(" 🎉 Setup Complete! You are ready to go.")
@@ -130,6 +107,27 @@ def main():
         print("[ContestPilot] Removing background task...")
         os.system('schtasks /delete /tn "ContestPilotDaily" /f')
         print("[ContestPilot] Uninstalled successfully. The script will no longer run automatically.")
+        return
+    if '--config' in sys.argv:
+        print("\n=========================================")
+        print("      🛠️ ContestPilot Configuration     ")
+        print("=========================================")
+        print("\n[1] Auto-Verification Handles")
+        handle = input(" - Enter LeetCode username: ").strip()
+        if handle: set_preference('leetcode_handle', handle)
+        
+        handle = input(" - Enter Codeforces handle: ").strip()
+        if handle: set_preference('codeforces_handle', handle)
+        
+        handle = input(" - Enter AtCoder username: ").strip()
+        if handle: set_preference('atcoder_handle', handle)
+        
+        print("\n[2] Email Summaries")
+        ans = input(" - Do you want to configure Email alerts? (y/N): ").strip().lower()
+        if ans == 'y':
+            run_email_setup()
+            
+        print("\n ✅ Configuration saved!\n")
         return
 
     # --- Analytics & History Commands ---
@@ -155,21 +153,24 @@ def main():
         run_setup_wizard()
     
     tz = get_preference('timezone')
-    print(f"\n[ContestPilot] Starting sync... (Timezone: {tz})")
+    print(f"\n⚡ [ContestPilot] Waking up... (Timezone: {tz})")
     
-    # Step 1: Fetch and rank contests
+    print("\n[1/4] Fetching latest contests...")
     sync_all_fetchers()
     
-    # Step 2: Push to Google Calendar
-    print("\n[ContestPilot] Starting Google Calendar sync...")
+    print("\n[2/4] Syncing to Google Calendar...")
     sync_calendar()
     
-    # Step 3: Auto-Verify Attendance for past contests
-    print("\n[ContestPilot] Auto-verifying recent contest attendance...")
+    print("\n[3/4] Auto-verifying recent attendance...")
     run_auto_verification()
-    
-    # Step 4: Send Email Notifications (this marks notifications as sent)
+    print("\n[4/4] Sending automated reports/emails...")
     process_email_notifications()
+    
+    print("\n 🎯 All caught up! ContestPilot goes back to sleep.")
+    
+    if '--background' not in sys.argv:
+        from contestpilot.analytics import print_stats
+        print_stats()
 
 if __name__ == '__main__':
     main()

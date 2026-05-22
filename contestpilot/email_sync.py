@@ -99,7 +99,7 @@ def process_email_notifications():
         
     notifications = get_pending_notifications()
     if notifications:
-        logger.info(f"Found {len(notifications)} pending notifications. Preparing email batch...")
+        print(f" 📧 Found {len(notifications)} pending notifications. Sending emails...")
 
         subject = f"[ContestPilot] {len(notifications)} Contest Updates"
         body = "Here are your latest competitive programming updates:\n\n"
