@@ -1,6 +1,8 @@
 @echo off
+cd /d "%~dp0.."
 echo =========================================
-echo    ContestPilot - Clear Google Calendar
+echo      ContestPilot - Update App
 echo =========================================
-call run.bat --clear-calendar
+echo Pulling latest updates from GitHub...
+git pull
 pause

@@ -1,6 +1,7 @@
 @echo off
+cd /d "%~dp0.."
 echo =========================================
-echo      ContestPilot - View Stats
+echo    ContestPilot - Uninstall & Stop
 echo =========================================
-call run.bat --stats
+call run.bat --stop-all
 pause

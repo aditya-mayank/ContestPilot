@@ -1,6 +1,7 @@
 @echo off
+cd /d "%~dp0.."
 echo =========================================
-echo    ContestPilot - Configure Settings
+echo      ContestPilot - View Stats
 echo =========================================
-call run.bat --config
+call run.bat --stats
 pause
