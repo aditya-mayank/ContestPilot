@@ -119,33 +119,53 @@ class AtCoderFetcher(BaseFetcher):
         if 'atcoder' not in enabled:
             return []
             
-        # Kenkoooo is stable and community-maintained. Official AtCoder API requires scraping.
-        url = "https://kenkoooo.com/atcoder/resources/contests.json"
-        data = fetch_with_cache(url)
-        contests = []
+        url = "https://atcoder.jp/contests/"
         
-        if data:
-            now_ts = datetime.datetime.now(datetime.timezone.utc).timestamp()
-            for item in data:
-                start_ts = item.get('start_epoch_second', 0)
-                if start_ts > now_ts:
-                    source_id = str(item.get('id'))
-                    duration = item.get('duration_second', 0)
-                    start_time = datetime.datetime.fromtimestamp(start_ts, datetime.timezone.utc)
-                    end_time = start_time + datetime.timedelta(seconds=duration)
-                    
-                    c = Contest(
-                        id=f"atcoder_{source_id}",
-                        source_id=source_id,
-                        name=item.get('title'),
-                        platform="atcoder",
-                        start_time=start_time.isoformat(),
-                        end_time=end_time.isoformat(),
-                        duration_seconds=duration,
-                        url=f"https://atcoder.jp/contests/{source_id}",
-                        status="UPCOMING"
-                    )
-                    contests.append(c)
+        session = get_requests_session()
+        try:
+            response = session.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=10)
+            response.raise_for_status()
+            html = response.text
+        except Exception as e:
+            logger.error(f"Failed to fetch {url}: {e}")
+            return []
+
+        contests = []
+        if 'Upcoming Contests' in html:
+            upcoming = html.split('Upcoming Contests')[1].split('Recent Contests')[0]
+            import re
+            rows = re.findall(r'<tr>(.*?)</tr>', upcoming, re.DOTALL)
+            
+            for row in rows:
+                time_match = re.search(r'http://www\.timeanddate\.com/worldclock/fixedtime\.html\?iso=([0-9T]+)', row)
+                name_match = re.search(r'<a href="/contests/([^"]+)">([^<]+)</a>', row)
+                dur_match = re.findall(r'<td class="text-center">([0-9:]+)</td>', row)
+                
+                if time_match and name_match and dur_match:
+                    iso_str = time_match.group(1) # format: 20260523T2100
+                    try:
+                        start_time = datetime.datetime.strptime(iso_str, "%Y%m%dT%H%M").replace(tzinfo=datetime.timezone(datetime.timedelta(hours=9)))
+                        start_time = start_time.astimezone(datetime.timezone.utc)
+                        
+                        dur_parts = dur_match[0].split(':')
+                        duration = int(dur_parts[0]) * 3600 + int(dur_parts[1]) * 60
+                        end_time = start_time + datetime.timedelta(seconds=duration)
+                        source_id = name_match.group(1)
+                        
+                        c = Contest(
+                            id=f"atcoder_{source_id}",
+                            source_id=source_id,
+                            name=name_match.group(2).strip(),
+                            platform="atcoder",
+                            start_time=start_time.isoformat(),
+                            end_time=end_time.isoformat(),
+                            duration_seconds=duration,
+                            url=f"https://atcoder.jp/contests/{source_id}",
+                            status="UPCOMING"
+                        )
+                        contests.append(c)
+                    except Exception as e:
+                        continue
         return contests
 
 class LeetCodeFetcher(BaseFetcher):
