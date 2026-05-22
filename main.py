@@ -86,16 +86,22 @@ def run_setup_wizard():
     ans = input(" Install a scheduled task to run silently every day at 8:00 AM? (y/N): ").strip().lower()
     if ans == 'y':
         import os
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        # In a real environment __file__ in main.py points to ContestPilot/main.py, so dirname is ContestPilot
+        import subprocess
         base_dir = os.path.dirname(os.path.abspath(__file__))
         vbs_path = os.path.join(base_dir, 'run_invisible.vbs')
         bat_path = os.path.join(base_dir, 'run.bat')
         
         # We pass --background so it doesn't pause
         cmd = f'schtasks /create /tn "ContestPilotDaily" /tr "wscript.exe \\"{vbs_path}\\" \\"{bat_path}\\" --background" /sc daily /st 08:00 /f'
-        os.system(cmd)
-        print(" ✅ Background task installed! It will run invisibly every morning.")
+        try:
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            if result.returncode == 0:
+                print(" ✅ Background task installed! It will run invisibly every morning.")
+            else:
+                print(f" ⚠️ Failed to install background task. Try running as Administrator.")
+                print(f" Error: {result.stderr.strip()}")
+        except Exception as e:
+            print(f" ⚠️ Failed to install background task: {e}")
     else:
         print(" ⏭️  Skipped.")
 
