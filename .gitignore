@@ -1,0 +1,27 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDEs
+.vscode/
+.idea/
+
+# Database
+*.db
+*.sqlite3
+contestpilot.db
+
+# Secrets
+token.json
+credentials.json
+
+# Scratch / Logs
+*.log
+scratch/
