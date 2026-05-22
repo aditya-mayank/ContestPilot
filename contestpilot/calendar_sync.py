@@ -154,3 +154,41 @@ def sync_calendar():
                 pass # Silently skip other fails
 
     print(f" ✅ Calendar sync complete! ({synced_count} events updated)")
+
+def clear_all_contests():
+    """Hunts down and deletes all ContestPilot events from Google Calendar."""
+    creds = get_credentials()
+    if not creds:
+        print(" [Error] Cannot access Calendar. No credentials found.")
+        return
+        
+    service = build('calendar', 'v3', credentials=creds)
+    print(" 🧹 Scanning your Google Calendar for ContestPilot events...")
+    
+    deleted_count = 0
+    page_token = None
+    now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    
+    while True:
+        events_result = service.events().list(
+            calendarId='primary', timeMin=now,
+            singleEvents=True, orderBy='startTime', pageToken=page_token).execute()
+        events = events_result.get('items', [])
+        
+        for event in events:
+            # ContestPilot events have specific formatting in their descriptions
+            desc = event.get('description', '')
+            if 'Platform:' in desc and 'Priority:' in desc and 'URL:' in desc:
+                eid = event.get('id', '')
+                try:
+                    service.events().delete(calendarId='primary', eventId=eid).execute()
+                    deleted_count += 1
+                    print(f"   🗑️  Deleted: {event.get('summary')}")
+                except Exception as e:
+                    pass
+        
+        page_token = events_result.get('nextPageToken')
+        if not page_token:
+            break
+            
+    print(f"\n ✅ Cleanup Complete! Removed {deleted_count} ContestPilot events from your calendar.")
