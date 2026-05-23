@@ -1,7 +1,7 @@
 @echo off
-cd /d "%~dp0.."
+cd /d "%~dp0..\.."
 echo =========================================
-echo    ContestPilot - Clear Google Calendar
+echo      ContestPilot - View Stats
 echo =========================================
-call run.bat --clear-calendar
+call run.bat --stats
 pause

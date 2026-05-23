@@ -114,7 +114,7 @@ The launcher script will create a virtual environment, install dependencies, and
 
 For the best user experience, your project contains a `Quick_Actions` folder with convenient launcher scripts:
 
-*(Mac/Linux users can use the equivalent `.sh` files in the same folder)*
+*(Windows users can find `.bat` files in the `Windows` folder, while Mac/Linux users can find their `.sh` files in the `Mac_Linux` folder)*
 
 * `clear_calendar` — removes all ContestPilot events
 * `view_stats` — shows your current streak and history

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 echo "========================================="
-echo "    ContestPilot - Uninstall & Stop"
+echo "    ContestPilot - Configure Settings"
 echo "========================================="
-./run.sh --stop-all
+./run.sh --config
 read -p "Press Enter to continue..."

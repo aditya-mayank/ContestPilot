@@ -1,7 +1,8 @@
 @echo off
-cd /d "%~dp0.."
+cd /d "%~dp0..\.."
 echo =========================================
-echo    ContestPilot - Configure Settings
+echo      ContestPilot - Update App
 echo =========================================
-call run.bat --config
+echo Pulling latest updates from GitHub...
+git pull
 pause

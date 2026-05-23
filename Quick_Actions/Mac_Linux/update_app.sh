@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 echo "========================================="
-echo "    ContestPilot - Clear Calendar"
+echo "    ContestPilot - Update App"
 echo "========================================="
-./run.sh --clear-calendar
+git pull origin main
 read -p "Press Enter to continue..."
