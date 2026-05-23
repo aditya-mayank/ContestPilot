@@ -97,10 +97,12 @@ If you want ContestPilot to send you weekly email summaries, you need a special 
 
 ### Step 5: Setup & Run
 
+*(Note: The very first time you run this, it may take 1–2 minutes to create the virtual environment and download dependencies. This is a one-time process.)*
+
 * **Windows**: Double-click the `run.bat` file.
 * **Mac / Linux**: Run `./run.sh` in your terminal.
 
-The launcher script will create a virtual environment, install dependencies, and start the wizard automatically.
+The launcher script will handle everything else and start the wizard automatically.
 
 ### The Guided Wizard Experience
 
