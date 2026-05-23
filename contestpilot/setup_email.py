@@ -17,7 +17,7 @@ def run_email_setup():
     print("    1. Go to: https://myaccount.google.com/apppasswords")
     print("    2. Create a new App Password named 'ContestPilot'.")
     print("    3. Paste the 16-character password below.")
-    password = getpass.getpass(" App Password: ").strip()
+    password = getpass.getpass(" App Password: ").replace(" ", "").strip()
     
     recipient = input("\n 🎯 Send alerts to this email (Press Enter to send to yourself): ").strip()
     if not recipient:
