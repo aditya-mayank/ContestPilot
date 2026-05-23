@@ -94,11 +94,10 @@ def build_event_body(contest: dict) -> dict:
                 {'method': 'popup', 'minutes': 24 * 60}, # 24 hours before
                 {'method': 'popup', 'minutes': 60},      # 1 hour before
             ]
-        elif priority == 'MEDIUM':
+        elif priority in ['MEDIUM', 'LOW']:
             event['reminders']['overrides'] = [
                 {'method': 'popup', 'minutes': 60},      # 1 hour before
             ]
-        # If LOW, overrides remain empty (no popups), but it's still visible on the calendar!
     
     return event
 
