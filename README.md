@@ -46,17 +46,27 @@ Since ContestPilot adds events directly to your personal calendar, you need to g
 5. Download the JSON file it gives you.
 6. Rename that downloaded file to exactly `credentials.json` and move it directly into your `ContestPilot` folder.
 
-### Step 3: The One-Click Setup
+### Step 3: Setup & Run
 
+**Option A: One-Click Setup (Windows)**
 1. Double-click the `run.bat` file.
-2. The terminal will open and automatically create a virtual environment and install all required packages.
-3. The Setup Wizard will begin its 5 steps:
+2. The terminal will open, automatically create a virtual environment, install all required packages, and launch the Setup Wizard.
+
+**Option B: Manual Setup (Mac / Linux / Advanced)**
+If you prefer to run it manually or aren't on Windows, install the Python prerequisites first:
+```bash
+pip install -r requirements.txt
+python main.py
+```
+
+### The Setup Wizard
+Once the app is running, the Setup Wizard will begin its 5 steps:
    * **1/5**: Automatically detects your timezone and sets up the databases.
    * **2/5**: Asks for your platform handles for auto-verification (CodeChef must be reviewed manually).
    * **3/5**: Opens a browser asking you to log into your Google Account. Click **Allow**.
    * **4/5**: Asks if you want to configure weekly Email Alerts.
-   * **5/5**: Installs the silent background task.
-4. It will then fetch your contests, sync your calendar, and print your personal CP Stats!
+   * **5/5**: Installs the silent background task (Windows only).
+It will then fetch your contests, sync your calendar, and print your personal CP Stats!
 
 ## ⚡ Quick Actions
 
