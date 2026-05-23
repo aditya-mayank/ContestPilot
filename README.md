@@ -36,6 +36,7 @@ Instead of relying on third-party contest APIs like Clist.by, ContestPilot fetch
 ## ✨ Key Features
 
 * **Smart Calendar Sync**: Events are added securely to your Google Calendar. If a platform reschedules a contest, ContestPilot detects the change and updates the event.
+* **Smart Reminders**: Automatically configures Google Calendar popup notifications based on contest priority (e.g., 24-hour and 1-hour warnings for major contests).
 * **Direct Fetchers**: Fetches contest information directly from supported platforms without relying on centralized third-party APIs.
 * **Participation Tracking**: Enter your handles during setup, and ContestPilot will help track your participation history using available platform data, with optional manual review when needed.
 * **Automated Email Summaries (Optional)**: Receive a "Weekly CP Report" in your inbox tracking your streak, platform breakdown, and schedule.
