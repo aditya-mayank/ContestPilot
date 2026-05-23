@@ -46,7 +46,15 @@ Since ContestPilot adds events directly to your personal calendar, you need to g
 5. Download the JSON file it gives you.
 6. Rename that downloaded file to exactly `credentials.json` and move it directly into your `ContestPilot` folder.
 
-### Step 3: Setup & Run
+### Step 3: Get a Google App Password (For Email Alerts)
+
+If you want ContestPilot to send you weekly email summaries, you need a special App Password. **Do not use your actual Gmail password.**
+1. Ensure you have 2-Step Verification enabled on your Google Account.
+2. Go to your [Google App Passwords](https://myaccount.google.com/apppasswords) page.
+3. Type `ContestPilot` as the app name and click **Create**.
+4. Copy the 16-character password it generates. You will paste this into the setup wizard later.
+
+### Step 4: Setup & Run
 
 **Option A: One-Click Setup (Windows)**
 1. Double-click the `run.bat` file.
