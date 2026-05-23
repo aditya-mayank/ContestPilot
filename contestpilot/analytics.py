@@ -57,12 +57,14 @@ def mark_attendance(search_term: str, action: str):
     
     print(f"[Success] Marked '{contest['name']}' as {action}!")
 
-def get_unreviewed_finished_contests() -> List[dict]:
+def get_unreviewed_finished_contests(limit: int = 10) -> List[dict]:
     """Gets contests that have finished but have no action logged."""
     conn = get_connection()
     cursor = conn.cursor()
     now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    day_ago_iso = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)).isoformat()
     
+    # Hide API-supported platforms from manual review for the first 24h so the auto-verifier can handle them
     query = '''
         SELECT c.* 
         FROM contests c
@@ -70,10 +72,16 @@ def get_unreviewed_finished_contests() -> List[dict]:
         WHERE c.end_time < ? 
           AND c.status != 'CANCELED'
           AND u.id IS NULL
+          AND (
+              LOWER(c.platform) NOT IN ('leetcode', 'codeforces', 'atcoder')
+              OR c.end_time < ?
+          )
         ORDER BY c.end_time DESC
-        LIMIT 10
     '''
-    rows = cursor.execute(query, (now_iso,)).fetchall()
+    if limit:
+        query += f" LIMIT {limit}"
+        
+    rows = cursor.execute(query, (now_iso, day_ago_iso)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
@@ -153,29 +161,43 @@ def generate_stats_report() -> str:
     conn = get_connection()
     cursor = conn.cursor()
     
-    # 1. Total Attended
+    # 1. Totals
     total_attended = cursor.execute("SELECT COUNT(*) FROM user_actions WHERE action='ATTENDED'").fetchone()[0]
+    total_skipped = cursor.execute("SELECT COUNT(*) FROM user_actions WHERE action='SKIPPED'").fetchone()[0]
     
     # 2. Platform Breakdown
     platform_stats = cursor.execute('''
-        SELECT c.platform, COUNT(u.id) as count
+        SELECT c.platform,
+               SUM(CASE WHEN u.action = 'ATTENDED' THEN 1 ELSE 0 END) as attended,
+               SUM(CASE WHEN u.action = 'SKIPPED' THEN 1 ELSE 0 END) as skipped
         FROM user_actions u
         JOIN contests c ON u.contest_id = c.id
-        WHERE u.action = 'ATTENDED'
         GROUP BY c.platform
-        ORDER BY count DESC
+        ORDER BY attended DESC, skipped DESC
     ''').fetchall()
     
-    # 3. Streak
+    # 3. Recent Contests
+    thirty_days_ago = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=30)).isoformat()
+    recent_contests = cursor.execute('''
+        SELECT c.platform, c.name, u.action
+        FROM user_actions u
+        JOIN contests c ON u.contest_id = c.id
+        WHERE u.timestamp > ?
+        ORDER BY c.end_time DESC
+    ''', (thirty_days_ago,)).fetchall()
+    
+    # 4. Streak
     streak = get_streak()
     
-    # 4. Missed Contests (Finished but no action logged)
+    # 5. Missed Contests (Finished but no action logged, hiding API-supported <24h)
     now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    day_ago_iso = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)).isoformat()
     missed = cursor.execute('''
         SELECT COUNT(*) FROM contests c
         LEFT JOIN user_actions u ON c.id = u.contest_id
         WHERE c.end_time < ? AND c.status != 'CANCELED' AND u.id IS NULL
-    ''', (now_iso,)).fetchone()[0]
+          AND (LOWER(c.platform) NOT IN ('leetcode', 'codeforces', 'atcoder') OR c.end_time < ?)
+    ''', (now_iso, day_ago_iso)).fetchone()[0]
     
     conn.close()
     
@@ -184,13 +206,22 @@ def generate_stats_report() -> str:
     lines.append("      ContestPilot Personal Stats        ")
     lines.append("=========================================")
     lines.append(f"🔥 Current Weekly Streak: {streak} weeks")
-    lines.append(f"🏆 Total Contests Attended: {total_attended}")
-    lines.append(f"⚠️ Unreviewed/Missed Contests: {missed} (Run --review)")
+    lines.append(f"🏆 Total Attended: {total_attended}")
+    lines.append(f"⏭️  Total Skipped: {total_skipped}")
+    lines.append(f"⚠️ Unreviewed/Missed: {missed} (Run --review)")
     
     lines.append("\n📊 Platform Breakdown:")
     if platform_stats:
         for p in platform_stats:
-            lines.append(f"   - {p['platform'].title()}: {p['count']} contests")
+            lines.append(f"   - {p['platform'].title()}: {p['attended']} Attended, {p['skipped']} Skipped")
+            
+            # Find recent contests for this platform
+            plat_recents = [r for r in recent_contests if r['platform'].lower() == p['platform'].lower()]
+            if plat_recents:
+                # Limit to 3 most recent per platform
+                for r in plat_recents[:3]:
+                    icon = "✓" if r['action'] == 'ATTENDED' else "✗"
+                    lines.append(f"     {icon} {r['name']}")
     else:
         lines.append("   - No data yet! Attend a contest first.")
     
