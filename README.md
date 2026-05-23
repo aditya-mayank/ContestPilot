@@ -77,8 +77,10 @@ If you want ContestPilot to send you weekly email summaries, you need a special 
 
 ### Step 5: Setup & Run
 
-1. Double-click the `run.bat` file.
-2. The terminal will open, automatically create a virtual environment, install all required packages, and launch the Setup Wizard.
+* **Windows**: Double-click the `run.bat` file.
+* **Mac / Linux**: Run `./run.sh` in your terminal.
+
+The terminal will open, automatically create a virtual environment, install all required packages, and launch the Setup Wizard.
 
 ### The Setup Wizard
 Once the app is running, the Setup Wizard will begin its 5 steps:
@@ -86,12 +88,14 @@ Once the app is running, the Setup Wizard will begin its 5 steps:
    * **2/5**: Asks for your platform handles for auto-verification (CodeChef must be reviewed manually).
    * **3/5**: Opens a browser asking you to log into your Google Account. Click **Allow**.
    * **4/5**: Asks if you want to configure weekly Email Alerts.
-   * **5/5**: Installs the silent background task (Windows only).
+   * **5/5**: Installs the silent background task (runs automatically via Windows Task Scheduler or Mac/Linux `crontab`).
 It will then fetch your contests, sync your calendar, and print your personal CP Stats!
 
 ## ⚡ Quick Actions
 
 For the best user experience, your project contains a `Quick_Actions` folder. Inside, you will find 6 easy double-click launcher files so you never have to type commands again:
+
+(Mac/Linux users can use the equivalent `.sh` files in the same folder!)
 
 * 🗑️ `clear_calendar.bat`: Instantly wipes all ContestPilot events from your calendar.
 * 📊 `view_stats.bat`: Displays your CP Report Card and current streak.
