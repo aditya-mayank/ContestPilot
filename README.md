@@ -27,9 +27,16 @@ ContestPilot features a completely automated wizard. You do not need to manually
 
 * A Google account.
 
-### Step 1: Install Python
+### Step 1: Install Python (Optional)
 
-You must have Python 3.10 or higher installed on your computer.
+You must have Python 3.10 or higher installed on your computer. You can check your current version by opening a terminal and running:
+```bash
+python --version
+# or
+python3 --version
+```
+If you already have Python 3.10 or higher, you can skip this step! Otherwise, install it using the methods below:
+
 * **Windows**: Download and install it from [python.org](https://www.python.org/downloads/). **CRITICAL**: Ensure you check the box that says **"Add python.exe to PATH"** during installation.
 * **Mac**: Install via Homebrew:
   ```bash
