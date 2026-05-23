@@ -89,7 +89,7 @@ def interactive_review():
     print("-" * 40)
     
     for contest in unreviewed:
-        ans = input(f"Did you attend [{contest['platform']}] {contest['name']}? (y/n/s): ").strip().lower()
+        ans = input(f"Did you attend [{contest['platform']}] {contest['name']}? (Y/N/S): ").strip().lower()
         if ans == 'y':
             mark_attendance(contest['id'], 'ATTENDED')
         elif ans == 'n':

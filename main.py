@@ -36,22 +36,40 @@ def run_setup_wizard():
     set_preference('timezone', local_tz)
     print(f" ✅ Auto-detected timezone: {local_tz}")
     
-    # Enable all supported platforms by default
-    platforms = ['leetcode', 'codeforces', 'codechef', 'atcoder']
-    set_preference('platforms', ','.join(platforms))
-    print(" ✅ Tracking enabled for: LeetCode, Codeforces, CodeChef, AtCoder")
+    print("\n[2/5] Platform Selection & Handles")
+    print(" Select the platforms you want to track. Only selected platforms will appear in your calendar and emails.")
     
-    print("\n[2/5] Auto-Verification Handles (Optional)")
-    print(" Leave blank to skip.")
-    print(" (Note: CodeChef does not provide a public API for auto-verification, so you will need to mark them manually via --review)")
-    handle = input(" - LeetCode username: ").strip()
-    if handle: set_preference('leetcode_handle', handle)
+    active_platforms = []
     
-    handle = input(" - Codeforces handle: ").strip()
-    if handle: set_preference('codeforces_handle', handle)
-    
-    handle = input(" - AtCoder username: ").strip()
-    if handle: set_preference('atcoder_handle', handle)
+    ans = input(" - Do you participate in LeetCode? (Y/N): ").strip().lower()
+    if ans == 'y':
+        active_platforms.append('leetcode')
+        handle = input("   Enter LeetCode username (leave blank to skip auto-verification): ").strip()
+        if handle: set_preference('leetcode_handle', handle)
+
+    ans = input(" - Do you participate in Codeforces? (Y/N): ").strip().lower()
+    if ans == 'y':
+        active_platforms.append('codeforces')
+        handle = input("   Enter Codeforces handle (leave blank to skip auto-verification): ").strip()
+        if handle: set_preference('codeforces_handle', handle)
+
+    ans = input(" - Do you participate in AtCoder? (Y/N): ").strip().lower()
+    if ans == 'y':
+        active_platforms.append('atcoder')
+        handle = input("   Enter AtCoder username (leave blank to skip auto-verification): ").strip()
+        if handle: set_preference('atcoder_handle', handle)
+
+    ans = input(" - Do you participate in CodeChef? (Y/N): ").strip().lower()
+    if ans == 'y':
+        active_platforms.append('codechef')
+        print("   (Note: CodeChef does not support auto-verification, so attendances must be marked manually)")
+        
+    if not active_platforms:
+        print(" ⚠️  No platforms selected! You can change this later by running with --config.")
+        set_preference('platforms', '')
+    else:
+        set_preference('platforms', ','.join(active_platforms))
+        print(f" ✅ Tracking enabled for: {', '.join(p.title() for p in active_platforms)}")
     
     print("\n[3/5] Google Calendar Connection")
     import os
@@ -67,7 +85,7 @@ def run_setup_wizard():
         print(" ✅ Calendar already connected.")
         
     print("\n[4/5] Email Notifications (Optional)")
-    ans = input(" - Do you want to configure Weekly Email alerts? (y/N): ").strip().lower()
+    ans = input(" - Do you want to configure Weekly Email alerts? (Y/N): ").strip().lower()
     if ans == 'y':
         run_email_setup()
 
@@ -139,19 +157,41 @@ def main():
         print("\n=========================================")
         print("      🛠️ ContestPilot Configuration     ")
         print("=========================================")
-        print("\n[1] Auto-Verification Handles")
-        print(" (Note: CodeChef does not provide a public API for auto-verification, so you will need to mark them manually via --review)")
-        handle = input(" - Enter LeetCode username: ").strip()
-        if handle: set_preference('leetcode_handle', handle)
+        print("\n[1] Platform Selection & Handles")
+        active_platforms = []
         
-        handle = input(" - Enter Codeforces handle: ").strip()
-        if handle: set_preference('codeforces_handle', handle)
-        
-        handle = input(" - Enter AtCoder username: ").strip()
-        if handle: set_preference('atcoder_handle', handle)
-        
+        ans = input(" - Do you participate in LeetCode? (Y/N): ").strip().lower()
+        if ans == 'y':
+            active_platforms.append('leetcode')
+            handle = input("   Enter LeetCode username (leave blank to skip auto-verification): ").strip()
+            if handle: set_preference('leetcode_handle', handle)
+
+        ans = input(" - Do you participate in Codeforces? (Y/N): ").strip().lower()
+        if ans == 'y':
+            active_platforms.append('codeforces')
+            handle = input("   Enter Codeforces handle (leave blank to skip auto-verification): ").strip()
+            if handle: set_preference('codeforces_handle', handle)
+
+        ans = input(" - Do you participate in AtCoder? (Y/N): ").strip().lower()
+        if ans == 'y':
+            active_platforms.append('atcoder')
+            handle = input("   Enter AtCoder username (leave blank to skip auto-verification): ").strip()
+            if handle: set_preference('atcoder_handle', handle)
+
+        ans = input(" - Do you participate in CodeChef? (Y/N): ").strip().lower()
+        if ans == 'y':
+            active_platforms.append('codechef')
+            print("   (Note: CodeChef does not support auto-verification, so attendances must be marked manually)")
+            
+        if not active_platforms:
+            print(" ⚠️  No platforms selected!")
+            set_preference('platforms', '')
+        else:
+            set_preference('platforms', ','.join(active_platforms))
+            print(f" ✅ Tracking enabled for: {', '.join(p.title() for p in active_platforms)}")
+            
         print("\n[2] Email Summaries")
-        ans = input(" - Do you want to configure Email alerts? (y/N): ").strip().lower()
+        ans = input(" - Do you want to configure Email alerts? (Y/N): ").strip().lower()
         if ans == 'y':
             run_email_setup()
             
