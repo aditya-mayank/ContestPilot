@@ -69,22 +69,11 @@ For the best user experience, your project contains a `Quick_Actions` folder. In
 * 🔄 `update_app.bat`: Automatically pulls the latest updates from GitHub.
 * 📝 `review_contests.bat`: Asks you if you attended past CodeChef contests so you can maintain your streak.
 
-## ⚙️ Automating with GitHub Actions
 
-This repo is pre-configured to run automatically every day at midnight UTC via GitHub Actions, meaning it can run 24/7 in the cloud without your PC!
+## 🔒 Security & Privacy Notes
 
-To set it up on your own fork:
-1. Fork this repository.
-2. Run the local setup (Steps 1-3 above) on your PC to generate your `token.json` file.
-3. Go to your GitHub fork, then **Settings**, then **Secrets and variables**, then **Actions**.
-4. Add the following secret:
-   * **Name**: `GOOGLE_CALENDAR_TOKEN`
-   * **Value**: Open your local `token.json` in Notepad, copy all the text, and paste it here.
-5. Go to the **Actions** tab on your GitHub repo and click "Enable Workflows".
-
-## 🔒 Security Notes
-
-* `credentials.json`, `token.json`, and the local database are excluded from version control for your safety.
+* **100% Local Processing**: ContestPilot runs securely on your computer. Your `contestpilot.db` (which stores your preferences and email settings), `credentials.json`, and `token.json` are automatically excluded from version control so they are never accidentally pushed to GitHub.
+* **No Middleman APIs**: Because it fetches data directly from the official platforms without relying on centralized third-party API keys (like clist.by), there are absolutely zero usage limits or user caps!
 * ContestPilot never asks for your actual Google password. It uses standard OAuth2 tokens.
 * For Email Summaries, it strictly requires a 16-character [Google App Password](https://myaccount.google.com/apppasswords), meaning your actual Gmail password is never touched.
 
