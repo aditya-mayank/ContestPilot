@@ -25,18 +25,32 @@ ContestPilot features a completely automated wizard. You do not need to manually
 
 ### Prerequisites
 
-* Python 3.10 or higher installed on your PC.
 * A Google account.
 
-### Step 1: Download the Project
+### Step 1: Install Python
+
+You must have Python 3.10 or higher installed on your computer.
+* **Windows**: Download and install it from [python.org](https://www.python.org/downloads/). **CRITICAL**: Ensure you check the box that says **"Add python.exe to PATH"** during installation.
+* **Mac**: Install via Homebrew:
+  ```bash
+  brew install python
+  ```
+* **Linux (Ubuntu/Debian)**:
+  ```bash
+  sudo apt update
+  sudo apt install python3 python3-pip python3-venv
+  ```
+
+### Step 2: Download the Project
 
 Clone the repository to your computer:
-```bash
-git clone https://github.com/aditya-mayank/ContestPilot.git
-cd ContestPilot
-```
+* **Windows / Mac / Linux**:
+  ```bash
+  git clone https://github.com/aditya-mayank/ContestPilot.git
+  cd ContestPilot
+  ```
 
-### Step 2: Get Google Calendar Permissions
+### Step 3: Get Google Calendar Permissions
 
 Since ContestPilot adds events directly to your personal calendar, you need to grant it permission through Google Cloud:
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
@@ -46,7 +60,7 @@ Since ContestPilot adds events directly to your personal calendar, you need to g
 5. Download the JSON file it gives you.
 6. Rename that downloaded file to exactly `credentials.json` and move it directly into your `ContestPilot` folder.
 
-### Step 3: Get a Google App Password (For Email Alerts)
+### Step 4: Get a Google App Password (For Email Alerts)
 
 If you want ContestPilot to send you weekly email summaries, you need a special App Password. **Do not use your actual Gmail password.**
 1. Ensure you have 2-Step Verification enabled on your Google Account.
@@ -54,18 +68,30 @@ If you want ContestPilot to send you weekly email summaries, you need a special 
 3. Type `ContestPilot` as the app name and click **Create**.
 4. Copy the 16-character password it generates. You will paste this into the setup wizard later.
 
-### Step 4: Setup & Run
+### Step 5: Setup & Run
 
-**Option A: One-Click Setup (Windows)**
+**Option A: One-Click Setup (Windows Only)**
 1. Double-click the `run.bat` file.
 2. The terminal will open, automatically create a virtual environment, install all required packages, and launch the Setup Wizard.
 
-**Option B: Manual Setup (Mac / Linux / Advanced)**
-If you prefer to run it manually or aren't on Windows, install the Python prerequisites first:
-```bash
-pip install -r requirements.txt
-python main.py
-```
+**Option B: Manual Setup (Mac / Linux / Advanced Windows)**
+If you prefer to run it manually or aren't on Windows, you will need to create a virtual environment and install the Python prerequisites first:
+
+* **Windows**:
+  ```cmd
+  python -m venv .venv
+  .venv\Scripts\activate
+  pip install -r requirements.txt
+  python main.py
+  ```
+
+* **Mac / Linux**:
+  ```bash
+  python3 -m venv .venv
+  source .venv/bin/activate
+  pip install -r requirements.txt
+  python3 main.py
+  ```
 
 ### The Setup Wizard
 Once the app is running, the Setup Wizard will begin its 5 steps:
