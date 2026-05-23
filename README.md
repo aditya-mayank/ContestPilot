@@ -77,28 +77,8 @@ If you want ContestPilot to send you weekly email summaries, you need a special 
 
 ### Step 5: Setup & Run
 
-**Option A: One-Click Setup (Windows Only)**
 1. Double-click the `run.bat` file.
 2. The terminal will open, automatically create a virtual environment, install all required packages, and launch the Setup Wizard.
-
-**Option B: Manual Setup (Mac / Linux / Advanced Windows)**
-If you prefer to run it manually or aren't on Windows, you will need to create a virtual environment and install the Python prerequisites first:
-
-* **Windows**:
-  ```cmd
-  python -m venv .venv
-  .venv\Scripts\activate
-  pip install -r requirements.txt
-  python main.py
-  ```
-
-* **Mac / Linux**:
-  ```bash
-  python3 -m venv .venv
-  source .venv/bin/activate
-  pip install -r requirements.txt
-  python3 main.py
-  ```
 
 ### The Setup Wizard
 Once the app is running, the Setup Wizard will begin its 5 steps:
