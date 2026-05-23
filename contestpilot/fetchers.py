@@ -289,35 +289,59 @@ def sync_all_fetchers():
     canceled_ids = set(old_upcoming.keys()) - new_upcoming
     if canceled_ids:
         from .database import log_history
+        import datetime
+        from tzlocal import get_localzone
+        now = datetime.datetime.now(datetime.timezone.utc)
+        
         for cid in canceled_ids:
             conn = get_connection()
             cursor = conn.cursor()
-            cursor.execute("SELECT name, platform, url, start_time FROM contests WHERE id = ?", (cid,))
+            cursor.execute("SELECT name, platform, url, start_time, end_time FROM contests WHERE id = ?", (cid,))
             row = cursor.fetchone()
             conn.close()
             
             if row:
-                import datetime
-                from tzlocal import get_localzone
                 try:
                     start_dt = datetime.datetime.fromisoformat(row['start_time'].replace('Z', '+00:00'))
-                    local_tz = get_localzone()
-                    start_local = start_dt.astimezone(local_tz).strftime('%b %d, %I:%M %p')
+                    end_dt = datetime.datetime.fromisoformat(row['end_time'].replace('Z', '+00:00'))
                 except Exception:
-                    start_local = row['start_time']
+                    start_dt = now
+                    end_dt = now
                 
-                msg = f"Contest canceled or removed: {row['name']}\nPlatform: {row['platform'].title()}\nScheduled for: {start_local}\nLink: {row['url']}"
+                if start_dt > now:
+                    try:
+                        local_tz = get_localzone()
+                        start_local = start_dt.astimezone(local_tz).strftime('%b %d, %I:%M %p')
+                    except Exception:
+                        start_local = row['start_time']
+                    
+                    msg = f"Contest canceled or removed: {row['name']}\nPlatform: {row['platform'].title()}\nScheduled for: {start_local}\nLink: {row['url']}"
+                    
+                    log_history(cid, 'STATUS', 'UPCOMING', 'CANCELED')
+                    queue_notification('CANCELED', cid, msg)
+                    
+                    conn = get_connection()
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE contests SET status = 'CANCELED' WHERE id = ?", (cid,))
+                    conn.commit()
+                    conn.close()
+                else:
+                    new_status = 'FINISHED' if end_dt <= now else 'ONGOING'
+                    conn = get_connection()
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE contests SET status = ? WHERE id = ?", (new_status, cid))
+                    conn.commit()
+                    conn.close()
             else:
                 msg = f"Contest canceled or removed: {old_upcoming[cid]}"
+                log_history(cid, 'STATUS', 'UPCOMING', 'CANCELED')
+                queue_notification('CANCELED', cid, msg)
                 
-            log_history(cid, 'STATUS', 'UPCOMING', 'CANCELED')
-            queue_notification('CANCELED', cid, msg)
-            
-            conn = get_connection()
-            cursor = conn.cursor()
-            cursor.execute("UPDATE contests SET status = 'CANCELED' WHERE id = ?", (cid,))
-            conn.commit()
-            conn.close()
+                conn = get_connection()
+                cursor = conn.cursor()
+                cursor.execute("UPDATE contests SET status = 'CANCELED' WHERE id = ?", (cid,))
+                conn.commit()
+                conn.close()
             
     from .analytics import log_sync
     log_sync(total_synced, 0, 0, len(canceled_ids))
