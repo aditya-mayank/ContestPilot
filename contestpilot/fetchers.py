@@ -228,14 +228,19 @@ class CodeChefFetcher(BaseFetcher):
         data = fetch_with_cache(url)
         contests = []
         
-        if data and 'future_contests' in data:
-            for item in data['future_contests']:
+        if data:
+            all_items = data.get('future_contests', []) + data.get('present_contests', [])
+            for item in all_items:
                 source_id = item.get('contest_code')
                 try:
                     start_time = datetime.datetime.fromisoformat(item.get('contest_start_date_iso'))
                     end_time = datetime.datetime.fromisoformat(item.get('contest_end_date_iso'))
                     duration = int((end_time - start_time).total_seconds())
                 except Exception:
+                    continue
+                    
+                # Skip contests that have already ended
+                if end_time <= datetime.datetime.now(datetime.timezone.utc):
                     continue
                     
                 c = Contest(
