@@ -8,11 +8,11 @@ Never miss a Codeforces, CodeChef, LeetCode, or AtCoder contest again. ContestPi
 
 ContestPilot is a powerful Python automation agent designed for Competitive Programmers. It natively fetches upcoming contests from top platforms, pushes them directly to your Google Calendar, and tracks your attendance.
 
-Unlike traditional scripts, ContestPilot does not require external API keys like Clist.by. It features a completely zero-prompt setup wizard that creates a local database, connects to your Google Calendar via OAuth, installs a silent Windows background task, and emails you weekly analytical reports.
+Unlike traditional scripts, ContestPilot does not require external contest API keys (like Clist.by). It features a completely zero-prompt setup wizard that creates a local database, connects to your Google Calendar via OAuth, installs a silent Windows background task, and emails you weekly analytical reports.
 
 ## ✨ Key Features
 
-* **Native Fetchers**: Scrapes directly from official LeetCode, Codeforces, CodeChef, and AtCoder endpoints. Zero API keys needed.
+* **Native Fetchers**: Scrapes directly from official LeetCode, Codeforces, CodeChef, and AtCoder endpoints. Zero contest-platform API keys needed.
 * **Smart Calendar Sync**: Events are added to your Google Calendar. If a platform reschedules a contest, ContestPilot automatically detects the change and updates the event instead of duplicating it.
 * **Attendance Auto-Verification**: Enter your handles during setup, and ContestPilot automatically checks if you attended the contest to maintain your streak!
 * **Automated Email Summaries**: Receive a beautiful "Weekly CP Report" in your inbox tracking your streak, platform breakdown, and schedule.
@@ -73,7 +73,7 @@ For the best user experience, your project contains a `Quick_Actions` folder. In
 ## 🔒 Security & Privacy Notes
 
 * **100% Local Processing**: ContestPilot runs securely on your computer. Your `contestpilot.db` (which stores your preferences and email settings), `credentials.json`, and `token.json` are automatically excluded from version control so they are never accidentally pushed to GitHub.
-* **No Middleman APIs**: Because it fetches data directly from the official platforms without relying on centralized third-party API keys (like clist.by), there are absolutely zero usage limits or user caps!
+* **No Middleman Contest APIs**: Because it fetches data directly from the official platforms without relying on centralized third-party API keys (like clist.by), there are absolutely zero usage limits or user caps!
 * ContestPilot never asks for your actual Google password. It uses standard OAuth2 tokens.
 * For Email Summaries, it strictly requires a 16-character [Google App Password](https://myaccount.google.com/apppasswords), meaning your actual Gmail password is never touched.
 
