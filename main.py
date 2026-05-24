@@ -1,13 +1,4 @@
-"""
-ARCHITECTURE NOTES:
-1. Setup Wizard Flow: Developers hate configuring boilerplate. The wizard is designed 
-   to capture everything necessary (timezones, handles, OAuth tokens) in a single, 
-   guided, 30-second flow so they never have to touch a configuration file manually.
-2. Why Background Tasks? A simple script requires the user to remember to run it. 
-   ContestPilot acts as a true stateful agent: by injecting an OS-level scheduled 
-   task (Windows Task Scheduler or crontab), it runs invisibly twice a day. This 
-   guarantees the user never misses a contest reschedule without draining their battery.
-"""
+
 
 import logging
 import sys
