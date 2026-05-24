@@ -26,4 +26,5 @@ credentials.json
 *.log
 scratch/
 PROJECT_EXPLANATION.md
-ARCHITECTURE_NOTES.md  
+ARCHITECTURE_NOTES.md
+*_explained.py
