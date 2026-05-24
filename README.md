@@ -124,6 +124,7 @@ For the best user experience, your project contains a `Quick_Actions` folder wit
 * `uninstall_and_stop` — disables automation and removes scheduled tasks
 * `update_app` — pulls the latest version from GitHub
 * `review_contests` — reviews contests that need manual confirmation
+* `email_stats_report` — instantly sends your up-to-date stats report to your configured email
 
 ## 🔒 Security & Privacy
 
