@@ -63,8 +63,9 @@ def get_unreviewed_finished_contests(limit: int = 10) -> List[dict]:
     cursor = conn.cursor()
     now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
     day_ago_iso = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)).isoformat()
+    six_days_ago_iso = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=6)).isoformat()
     
-    # Hide API-supported platforms from manual review for the first 24h so the auto-verifier can handle them
+    # Hide API-supported platforms from manual review while waiting for auto-verifier
     query = '''
         SELECT c.* 
         FROM contests c
@@ -74,14 +75,15 @@ def get_unreviewed_finished_contests(limit: int = 10) -> List[dict]:
           AND u.id IS NULL
           AND (
               LOWER(c.platform) NOT IN ('leetcode', 'codeforces', 'atcoder')
-              OR c.end_time < ?
+              OR (LOWER(c.platform) = 'leetcode' AND c.end_time < ?)
+              OR (LOWER(c.platform) IN ('codeforces', 'atcoder') AND c.end_time < ?)
           )
         ORDER BY c.end_time DESC
     '''
     if limit:
         query += f" LIMIT {limit}"
         
-    rows = cursor.execute(query, (now_iso, day_ago_iso)).fetchall()
+    rows = cursor.execute(query, (now_iso, six_days_ago_iso, day_ago_iso)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
@@ -189,15 +191,20 @@ def generate_stats_report() -> str:
     # 4. Streak
     streak = get_streak()
     
-    # 5. Missed Contests (Finished but no action logged, hiding API-supported <24h)
+    # 5. Missed Contests (Finished but no action logged, hiding API-supported during auto-verify wait)
     now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
     day_ago_iso = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)).isoformat()
+    six_days_ago_iso = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=6)).isoformat()
     missed = cursor.execute('''
         SELECT COUNT(*) FROM contests c
         LEFT JOIN user_actions u ON c.id = u.contest_id
         WHERE c.end_time < ? AND c.status != 'CANCELED' AND u.id IS NULL
-          AND (LOWER(c.platform) NOT IN ('leetcode', 'codeforces', 'atcoder') OR c.end_time < ?)
-    ''', (now_iso, day_ago_iso)).fetchone()[0]
+          AND (
+              LOWER(c.platform) NOT IN ('leetcode', 'codeforces', 'atcoder')
+              OR (LOWER(c.platform) = 'leetcode' AND c.end_time < ?)
+              OR (LOWER(c.platform) IN ('codeforces', 'atcoder') AND c.end_time < ?)
+          )
+    ''', (now_iso, six_days_ago_iso, day_ago_iso)).fetchone()[0]
     
     conn.close()
     

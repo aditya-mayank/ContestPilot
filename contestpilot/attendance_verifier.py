@@ -29,8 +29,8 @@ def verify_leetcode(handle: str, contests: list):
                     mark_attendance(c.id, 'ATTENDED')
                 else:
                     end_dt = datetime.datetime.fromisoformat(c.end_time.replace('Z', '+00:00'))
-                    if (datetime.datetime.now(datetime.timezone.utc) - end_dt).total_seconds() > 86400:
-                        logger.info(f"Auto-Skipped LeetCode: {c.name} (ended >24h ago)")
+                    if (datetime.datetime.now(datetime.timezone.utc) - end_dt).total_seconds() > 518400:
+                        logger.info(f"Auto-Skipped LeetCode: {c.name} (ended >6 days ago)")
                         mark_attendance(c.id, 'SKIPPED')
     except Exception as e:
         logger.error(f"Failed to verify LeetCode for {handle}: {e}")
