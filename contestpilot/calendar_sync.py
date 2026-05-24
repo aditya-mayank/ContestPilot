@@ -1,14 +1,4 @@
-"""
-ARCHITECTURE NOTES:
-1. Why OAuth? Asking users for their Google password is insecure and often blocked 
-   by modern security policies. OAuth redirects the user to Google to securely 
-   generate a strict, limited-scope token (`token.json`) that only allows Calendar access.
-2. Duplicate Prevention & Reschedules: The `make_stable_event_id` function is critical.
-   By generating a deterministic, stable ID based on the contest's ID, we ensure 
-   the calendar sync is idempotent. If we try to insert an event and Google returns 
-   a `409 Conflict`, we gracefully catch it and issue an `update` instead. This 
-   prevents duplicate events and seamlessly handles when a platform reschedules a contest.
-"""
+
 
 import os
 import base64
