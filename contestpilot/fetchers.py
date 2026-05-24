@@ -1,4 +1,17 @@
 import logging
+"""
+ARCHITECTURE NOTES:
+1. Why Direct Fetchers? Using third-party aggregators (like Clist.by) introduces 
+   a single point of failure and often enforces rate limits or API key requirements. 
+   By fetching directly from LeetCode, Codeforces, etc., the app remains fully 
+   autonomous and requires zero configuration.
+2. Why Normalization? Every platform returns API data differently (e.g., LeetCode 
+   uses GraphQL, Codeforces uses REST with Unix timestamps). The fetcher classes 
+   abstract this away, converting everything into a strict, unified `Contest` dictionary. 
+   This allows the downstream Database and Calendar Sync modules to be completely 
+   "dumb" and agnostic to the source of the data.
+"""
+
 import requests
 import json
 import datetime

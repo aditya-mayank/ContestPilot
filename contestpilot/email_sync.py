@@ -117,3 +117,24 @@ def process_email_notifications():
                 
     # Also trigger summaries
     send_periodic_summaries()
+
+def force_send_stats_email():
+    """Immediately sends the personal stats report to the configured email."""
+    if not is_email_configured():
+        print(" ⚠️ Email is not configured. Run '.\\run.bat --config' to set up email alerts.")
+        return
+        
+    print(" 📧 Generating stats report...")
+    from .analytics import generate_stats_report
+    stats_report = generate_stats_report()
+    
+    subject = "[ContestPilot] On-Demand Personal Stats Report"
+    body = "Here is your on-demand ContestPilot stats report:\n\n"
+    body += stats_report
+    body += "\n--\nHappy Coding!\nContestPilot"
+    
+    print(" 📧 Sending email...")
+    if send_email(subject, body):
+        print(" ✅ Stats report successfully sent to your email!")
+    else:
+        print(" ❌ Failed to send email. Check your internet connection or credentials.")

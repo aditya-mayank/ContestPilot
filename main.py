@@ -160,6 +160,11 @@ def main():
         print("[ContestPilot] Uninstalled successfully. The script will no longer run automatically.")
         return
 
+    if '--email-stats' in sys.argv:
+        from contestpilot.email_sync import force_send_stats_email
+        force_send_stats_email()
+        return
+
     if '--clear-calendar' in sys.argv:
         from contestpilot.calendar_sync import clear_all_contests
         clear_all_contests()

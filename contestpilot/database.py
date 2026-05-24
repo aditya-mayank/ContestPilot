@@ -1,3 +1,15 @@
+"""
+ARCHITECTURE NOTES:
+1. Why SQLite? ContestPilot is a local-first, zero-setup desktop application. 
+   A heavy RDBMS like PostgreSQL requires installation and background daemons. 
+   SQLite is highly portable (just a .db file), requires zero configuration, 
+   and easily handles the small dataset of a single user's contest history.
+2. Why UTC? Timezones are notoriously difficult due to DST and regional shifts. 
+   By strictly storing all `start_time` and `end_time` values in absolute UTC 
+   inside the database, we guarantee the backend logic never breaks, even if 
+   the user travels and their local machine timezone changes.
+"""
+
 import sqlite3
 import os
 import logging
