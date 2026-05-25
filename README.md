@@ -139,5 +139,5 @@ For the best user experience, your project contains a `Quick_Actions` folder wit
 To remain transparent, please note the following limitations:
 * Some contest platforms may change their page structure or APIs, which could temporarily break fetchers.
 * Email alerts are strictly optional and depend on Gmail's App Password infrastructure.
-* Attendance tracking may require manual review for platforms that lack public APIs or detailed submission histories.
+* Attendance auto-verification works for all supported platforms (LeetCode, Codeforces, AtCoder, CodeChef) via their public APIs and profile pages.
 * Background automation uses Windows Task Scheduler on Windows and `crontab` on macOS/Linux. Both are set up automatically during the first run.
