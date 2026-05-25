@@ -7,4 +7,6 @@ If WScript.Arguments.Count > 1 Then
         cmd = cmd & " " & WScript.Arguments(i)
     Next
 End If
-WinScriptHost.Run cmd, 0, False
+
+' Add cmd.exe /c so it properly resolves the batch file and doesn't crash on paths!
+WinScriptHost.Run "cmd.exe /c " & Chr(34) & cmd & Chr(34), 0, False

@@ -97,7 +97,7 @@ def run_setup_wizard():
     if platform.system() == 'Windows':
         vbs_path = os.path.join(base_dir, 'run_invisible.vbs')
         bat_path = os.path.join(base_dir, 'run.bat')
-        cmd = f'powershell -Command "$t1 = New-ScheduledTaskTrigger -Daily -At 2am; $t2 = New-ScheduledTaskTrigger -Daily -At 2pm; Register-ScheduledTask -TaskName \'ContestPilotDaily\' -Trigger $t1, $t2 -Action (New-ScheduledTaskAction -Execute \'wscript.exe\' -Argument \'\\"{vbs_path}\\" \\"{bat_path}\\" --background\') -Force"'
+        cmd = f'powershell -Command "$t1 = New-ScheduledTaskTrigger -Daily -At 2am; $t2 = New-ScheduledTaskTrigger -Daily -At 2pm; Register-ScheduledTask -TaskName \'ContestPilotDaily\' -Trigger $t1, $t2 -Action (New-ScheduledTaskAction -Execute \'wscript.exe\' -Argument \'"{vbs_path}" "{bat_path}" --background\') -Force"'
         try:
             result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
             if result.returncode == 0:
