@@ -97,11 +97,11 @@ def run_setup_wizard():
     if platform.system() == 'Windows':
         vbs_path = os.path.join(base_dir, 'run_invisible.vbs')
         bat_path = os.path.join(base_dir, 'run.bat')
-        cmd = f'powershell -Command "$t1 = New-ScheduledTaskTrigger -Daily -At 2am; $t2 = New-ScheduledTaskTrigger -Daily -At 2pm; Register-ScheduledTask -TaskName \'ContestPilotDaily\' -Trigger $t1, $t2 -Action (New-ScheduledTaskAction -Execute \'wscript.exe\' -Argument \'"{vbs_path}" "{bat_path}" --background\') -Force"'
+        cmd = f'powershell -Command "$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; $t1 = New-ScheduledTaskTrigger -Daily -At 12am; $t2 = New-ScheduledTaskTrigger -Daily -At 7am; $t3 = New-ScheduledTaskTrigger -Daily -At 2pm; Register-ScheduledTask -TaskName \'ContestPilotDaily\' -Trigger $t1, $t2, $t3 -Action (New-ScheduledTaskAction -Execute \'wscript.exe\' -Argument \'"{vbs_path}" "{bat_path}" --background\') -Settings $settings -Force"'
         try:
             result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
             if result.returncode == 0:
-                print(" ✅ Background task installed! It will run invisibly twice a day (2:00 AM and 2:00 PM).")
+                print(" ✅ Background task installed! It will run invisibly three times a day (12:00 AM, 7:00 AM, and 2:00 PM).")
             else:
                 print(" ⚠️  Could not auto-install background task (run terminal as Administrator if you want it).")
         except Exception:
@@ -111,11 +111,11 @@ def run_setup_wizard():
         run_sh_path = os.path.join(base_dir, 'run.sh')
         try:
             os.chmod(run_sh_path, 0o755) # Make executable
-            cron_job = f"0 2,14 * * * cd '{base_dir}' && ./run.sh --background"
+            cron_job = f"0 0,7,14 * * * cd '{base_dir}' && ./run.sh --background"
             cmd = f"(crontab -l 2>/dev/null | grep -v 'ContestPilot'; echo \"{cron_job} # ContestPilot\") | crontab -"
             result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
             if result.returncode == 0:
-                print(" ✅ Background task installed! It will run silently twice a day (2:00 AM and 2:00 PM) via cron.")
+                print(" ✅ Background task installed! It will run silently three times a day (12:00 AM, 7:00 AM, and 2:00 PM) via cron.")
             else:
                 print(" ⚠️  Could not auto-install background task via crontab.")
         except Exception:
