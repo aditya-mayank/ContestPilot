@@ -107,15 +107,32 @@ def get_streak() -> int:
     conn = get_connection()
     cursor = conn.cursor()
     
-    # We look at weeks where action = 'ATTENDED'
+    # Fetch all attended timestamps
     query = '''
-        SELECT DISTINCT strftime('%Y-%W', timestamp) as week_str
+        SELECT timestamp
         FROM user_actions
         WHERE action = 'ATTENDED'
-        ORDER BY week_str DESC
     '''
-    rows = cursor.execute(query).fetchall()
+    raw_rows = cursor.execute(query).fetchall()
     conn.close()
+    
+    # Process them using Python's isocalendar so it matches perfectly
+    attended_weeks = set()
+    for row in raw_rows:
+        try:
+            # Handle +00:00 vs Z formatting
+            ts = row['timestamp'].replace('Z', '+00:00')
+            dt = datetime.datetime.fromisoformat(ts)
+            y, w, _ = dt.isocalendar()
+            attended_weeks.add((y, w))
+        except Exception:
+            pass
+            
+    # Sort them descending (most recent first)
+    sorted_weeks = sorted(list(attended_weeks), key=lambda x: (x[0], x[1]), reverse=True)
+    
+    # Format them exactly like the old rows to reuse the existing logic
+    rows = [{'week_str': f"{y}-{w}"} for y, w in sorted_weeks]
     
     if not rows:
         return 0
