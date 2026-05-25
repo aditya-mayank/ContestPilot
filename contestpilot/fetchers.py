@@ -13,9 +13,6 @@ logger = logging.getLogger(__name__)
 
 CACHE_EXPIRY_SECONDS = 3600  # 1 hour
 
-# ... [skipping cache/fetch functions unchanged for brevity, but I should use a robust replace for the exact lines]
-
-CACHE_EXPIRY_SECONDS = 3600  # 1 hour
 
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry

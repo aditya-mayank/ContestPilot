@@ -86,7 +86,6 @@ def run_setup_wizard():
         print(f" ✅ Tracking enabled for: {', '.join(p.title() for p in active_platforms)}")
     
     print("\n[3/5] Google Calendar Connection")
-    import os
     import time
     if not os.path.exists('token.json'):
         print(" ContestPilot needs permission to add events to your Calendar.")
@@ -189,6 +188,7 @@ def run_setup_wizard():
     print("\n=========================================")
     print(" 🎉 Setup Complete! You are ready to go.")
     print("=========================================\n")
+
 def main():
     if '--background' in sys.argv:
         # stdout/stderr already redirected at module top; just verify
@@ -255,7 +255,8 @@ def main():
         ans = input(" - Do you participate in CodeChef? (Y/N): ").strip().lower()
         if ans == 'y':
             active_platforms.append('codechef')
-            print("   (Note: CodeChef does not support auto-verification, so attendances must be marked manually)")
+            handle = input("   Enter CodeChef username (leave blank to skip auto-verification): ").strip()
+            if handle: set_preference('codechef_handle', handle)
             
         if not active_platforms:
             print(" ⚠️  No platforms selected!")
