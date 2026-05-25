@@ -95,9 +95,12 @@ def run_setup_wizard():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     
     if platform.system() == 'Windows':
-        vbs_path = os.path.join(base_dir, 'run_invisible.vbs')
-        bat_path = os.path.join(base_dir, 'run.bat')
-        cmd = f'powershell -Command "$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; $t1 = New-ScheduledTaskTrigger -Daily -At 12am; $t2 = New-ScheduledTaskTrigger -Daily -At 7am; $t3 = New-ScheduledTaskTrigger -Daily -At 2pm; Register-ScheduledTask -TaskName \'ContestPilotDaily\' -Trigger $t1, $t2, $t3 -Action (New-ScheduledTaskAction -Execute \'wscript.exe\' -Argument \'"{vbs_path}" "{bat_path}" --background\') -Settings $settings -Force"'
+        pythonw_path = os.path.join(base_dir, '.venv', 'Scripts', 'pythonw.exe')
+        if not os.path.exists(pythonw_path):
+            pythonw_path = 'pythonw.exe'
+        
+        main_path = os.path.join(base_dir, 'main.py')
+        cmd = f'powershell -Command "$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; $t1 = New-ScheduledTaskTrigger -Daily -At 12am; $t2 = New-ScheduledTaskTrigger -Daily -At 7am; $t3 = New-ScheduledTaskTrigger -Daily -At 2pm; $action = New-ScheduledTaskAction -Execute \'{pythonw_path}\' -Argument \'\\"{main_path}\\" --background\' -WorkingDirectory \'{base_dir}\'; Register-ScheduledTask -TaskName \'ContestPilotDaily\' -Trigger $t1, $t2, $t3 -Action $action -Settings $settings -Force"'
         try:
             result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
             if result.returncode == 0:
@@ -125,6 +128,14 @@ def run_setup_wizard():
     print(" 🎉 Setup Complete! You are ready to go.")
     print("=========================================\n")
 def main():
+    if '--background' in sys.argv:
+        # Redirect all prints to a log file so pythonw doesn't crash on missing stdout/stderr
+        import os, sys
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        log_path = os.path.join(base_dir, 'background.log')
+        sys.stdout = open(log_path, 'a', encoding='utf-8')
+        sys.stderr = sys.stdout
+        
     if '--setup-email' in sys.argv:
         run_email_setup()
         return
