@@ -75,7 +75,8 @@ def run_setup_wizard():
     ans = input(" - Do you participate in CodeChef? (Y/N): ").strip().lower()
     if ans == 'y':
         active_platforms.append('codechef')
-        print("   (Note: CodeChef does not support auto-verification, so attendances must be marked manually)")
+        handle = input("   Enter CodeChef username (leave blank to skip auto-verification): ").strip()
+        if handle: set_preference('codechef_handle', handle)
         
     if not active_platforms:
         print(" ⚠️  No platforms selected! You can change this later by running with --config.")

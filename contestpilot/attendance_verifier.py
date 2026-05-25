@@ -84,6 +84,35 @@ def verify_atcoder(handle: str, contests: list):
     except Exception as e:
         logger.error(f"Failed to verify AtCoder for {handle}: {e}")
 
+def verify_codechef(handle: str, contests: list):
+    """Verify CodeChef attendance by scraping the user's public profile page.
+    The profile page embeds a `date_versus_rating` JSON object in a <script> tag
+    containing all rated contest participation history with contest codes."""
+    import re
+    import json
+    url = f'https://www.codechef.com/users/{handle}'
+    try:
+        r = requests.get(url, timeout=15, headers={'User-Agent': 'Mozilla/5.0'})
+        if r.status_code == 200:
+            # Extract the date_versus_rating JSON from the embedded JavaScript
+            match = re.search(r'"date_versus_rating"\s*:\s*\{"all"\s*:\s*(\[.*?\])\s*,', r.text)
+            if match:
+                rating_history = json.loads(match.group(1))
+                attended_codes = {entry['code'] for entry in rating_history if 'code' in entry}
+                
+                for c in contests:
+                    # CodeChef source_id is the contest code (e.g., START237C)
+                    if c.source_id in attended_codes:
+                        logger.info(f"Auto-Verified CodeChef: {c.name}")
+                        mark_attendance(c.id, 'ATTENDED')
+                    else:
+                        end_dt = datetime.datetime.fromisoformat(c.end_time.replace('Z', '+00:00'))
+                        if (datetime.datetime.now(datetime.timezone.utc) - end_dt).total_seconds() > 604800:
+                            logger.info(f"Auto-Skipped CodeChef: {c.name} (ended >7 days ago)")
+                            mark_attendance(c.id, 'SKIPPED')
+    except Exception as e:
+        logger.error(f"Failed to verify CodeChef for {handle}: {e}")
+
 def run_auto_verification():
     """Runs through past unverified contests and checks platform APIs for attendance."""
     conn = get_connection()
@@ -101,7 +130,7 @@ def run_auto_verification():
         return
 
     # Group by platform
-    unverified = {'leetcode': [], 'codeforces': [], 'atcoder': []}
+    unverified = {'leetcode': [], 'codeforces': [], 'atcoder': [], 'codechef': []}
     for r in rows:
         plat = r['platform'].lower()
         if plat in unverified:
@@ -125,3 +154,9 @@ def run_auto_verification():
         handle = get_preference('atcoder_handle')
         if handle:
             verify_atcoder(handle, unverified['atcoder'])
+
+    # CodeChef
+    if unverified['codechef']:
+        handle = get_preference('codechef_handle')
+        if handle:
+            verify_codechef(handle, unverified['codechef'])
