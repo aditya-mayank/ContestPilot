@@ -15,7 +15,8 @@ ContestPilot is a smart competitive programming assistant that fetches upcoming 
 * Creates the local database
 * Fetches contests from supported platforms
 * Syncs events to your Google Calendar
-* Updates calendar events if a contest is moved
+* Updates calendar events if a contest is moved or cancelled
+* Runs silently in the background 3x daily (12:00 AM, 8:00 AM, 4:00 PM)
 * Stores your participation history
 * Sends optional weekly email reminders
 
@@ -40,7 +41,7 @@ Instead of relying on third-party contest APIs like Clist.by, ContestPilot fetch
 * **Direct Fetchers**: Fetches contest information directly from supported platforms without relying on centralized third-party APIs.
 * **Participation Tracking & Stats**: Enter your handles during setup, and ContestPilot will automatically track your participation (both attended and skipped contests) across platforms. Generates a detailed analytics dashboard showing your weekly streak and a platform-by-platform breakdown of your recent contests.
 * **Automated Email Summaries (Optional)**: Receive a beautifully formatted "Weekly CP Report" in your inbox containing your personal stats, recent contest history, and upcoming schedule.
-* **Background Automation (Optional)**: Optionally installs a background task for automatic periodic sync on Windows, macOS, or Linux.
+* **Background Automation**: Automatically installs a background task that syncs your calendar 3 times a day (12:00 AM, 8:00 AM, and 4:00 PM). Works on Windows (Task Scheduler), macOS, and Linux (crontab) — no manual re-runs needed after initial setup.
 
 ## 🚀 Getting Started
 
@@ -110,7 +111,7 @@ The launcher script will handle everything else and start the wizard automatical
 * **Enables only the platforms you want**: Tracks your handles for participation history.
 * **Connects Google Calendar securely**: Opens a browser for a one-time authorization and saves the OAuth token automatically.
 * **Optionally enables email alerts**: Configures your weekly summaries using the App Password.
-* **Optionally installs background sync**: Sets up automatic periodic background updates so you never have to run the script manually again.
+* **Installs background sync**: Sets up automatic updates at 12:00 AM, 8:00 AM, and 4:00 PM daily. Uses Windows Task Scheduler on Windows or crontab on Mac/Linux — your calendar stays up-to-date without ever running the script again.
 
 ## ⚡ Quick Actions
 
@@ -139,4 +140,4 @@ To remain transparent, please note the following limitations:
 * Some contest platforms may change their page structure or APIs, which could temporarily break fetchers.
 * Email alerts are strictly optional and depend on Gmail's App Password infrastructure.
 * Attendance tracking may require manual review for platforms that lack public APIs or detailed submission histories.
-* Background automation behaves slightly differently depending on your OS (Windows Task Scheduler vs. macOS/Linux `crontab`).
+* Background automation uses Windows Task Scheduler on Windows and `crontab` on macOS/Linux. Both are set up automatically during the first run.
