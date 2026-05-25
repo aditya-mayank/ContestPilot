@@ -68,6 +68,7 @@ def build_event_body(contest: dict) -> dict:
     
     event = {
         'id': make_stable_event_id(contest['id']),
+        'status': 'confirmed',
         'summary': summary,
         'description': f"Platform: {contest['platform'].title()}\nPriority: {priority}\nReason: {reason}\nURL: {contest['url']}",
         'start': {
@@ -142,15 +143,15 @@ def sync_calendar():
             synced_count += 1
         except Exception as e:
             if '409' in str(e):
-                # 409 Conflict: Event with this ID already exists.
-                # It means the contest was already added, but might have been updated.
+                # 409 Conflict: Event ID already exists (active or cancelled ghost).
+                # update() with status:'confirmed' will restore it to visible.
                 try:
                     service.events().update(calendarId='primary', eventId=event_body['id'], body=event_body).execute()
                     synced_count += 1
-                except Exception as ex:
-                    pass # Silently skip update fails
+                except Exception:
+                    pass
             else:
-                pass # Silently skip other fails
+                pass  # Silently skip other errors
 
     print(f" ✅ Calendar sync complete! ({synced_count} events updated)")
 

@@ -1,11 +1,24 @@
 import logging
 import sys
+import os
+
+# --- Background mode: redirect stdout/stderr FIRST before any imports ---
+# This must happen before anything else so pythonw.exe (no console) doesn't crash
+# on SyntaxWarnings or any other output during module loading.
+if '--background' in sys.argv:
+    _base_dir = os.path.dirname(os.path.abspath(__file__))
+    _log_path = os.path.join(_base_dir, 'background.log')
+    _log_file = open(_log_path, 'a', encoding='utf-8')
+    sys.stdout = _log_file
+    sys.stderr = _log_file
 
 # Ensure UTF-8 output on Windows terminals to prevent emoji crashes
 try:
-    sys.stdout.reconfigure(encoding='utf-8')
-    sys.stderr.reconfigure(encoding='utf-8')
-except AttributeError:
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8')
+except (AttributeError, Exception):
     pass
 
 from contestpilot.database import is_initialized, init_db, set_preference, get_preference
@@ -92,6 +105,7 @@ def run_setup_wizard():
     print("\n[5/5] Local Background Automation")
     import subprocess
     import platform
+    import tempfile
     base_dir = os.path.dirname(os.path.abspath(__file__))
     
     if platform.system() == 'Windows':
@@ -100,25 +114,72 @@ def run_setup_wizard():
             pythonw_path = 'pythonw.exe'
         
         main_path = os.path.join(base_dir, 'main.py')
-        cmd = f'powershell -Command "$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; $t1 = New-ScheduledTaskTrigger -Daily -At 12am; $t2 = New-ScheduledTaskTrigger -Daily -At 7am; $t3 = New-ScheduledTaskTrigger -Daily -At 2pm; $action = New-ScheduledTaskAction -Execute \'{pythonw_path}\' -Argument \'\\"{main_path}\\" --background\' -WorkingDirectory \'{base_dir}\'; Register-ScheduledTask -TaskName \'ContestPilotDaily\' -Trigger $t1, $t2, $t3 -Action $action -Settings $settings -Force"'
+        
+        task_xml = f"""<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <URI>\\ContestPilotDaily</URI>
+  </RegistrationInfo>
+  <Triggers>
+    <CalendarTrigger><StartBoundary>2026-01-01T00:00:00</StartBoundary><ScheduleByDay><DaysInterval>1</DaysInterval></ScheduleByDay></CalendarTrigger>
+    <CalendarTrigger><StartBoundary>2026-01-01T08:00:00</StartBoundary><ScheduleByDay><DaysInterval>1</DaysInterval></ScheduleByDay></CalendarTrigger>
+    <CalendarTrigger><StartBoundary>2026-01-01T16:00:00</StartBoundary><ScheduleByDay><DaysInterval>1</DaysInterval></ScheduleByDay></CalendarTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <LogonType>InteractiveToken</LogonType>
+      <RunLevel>LeastPrivilege</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+    <IdleSettings><StopOnIdleEnd>true</StopOnIdleEnd><RestartOnIdle>false</RestartOnIdle></IdleSettings>
+    <AllowStartOnDemand>true</AllowStartOnDemand>
+    <Enabled>true</Enabled>
+    <Hidden>false</Hidden>
+    <RunOnlyIfIdle>false</RunOnlyIfIdle>
+    <WakeToRun>true</WakeToRun>
+    <ExecutionTimeLimit>PT72H</ExecutionTimeLimit>
+    <Priority>7</Priority>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>{pythonw_path}</Command>
+      <Arguments>"{main_path}" --background</Arguments>
+      <WorkingDirectory>{base_dir}</WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>"""
         try:
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            fd, tmp_path = tempfile.mkstemp(suffix='.xml')
+            with os.fdopen(fd, 'w', encoding='utf-16') as f:
+                f.write(task_xml)
+            
+            subprocess.run('schtasks /delete /tn ContestPilotDaily /f', shell=True, capture_output=True)
+            result = subprocess.run(f'schtasks /create /tn ContestPilotDaily /xml "{tmp_path}" /f', shell=True, capture_output=True, text=True)
+            os.remove(tmp_path)
+            
             if result.returncode == 0:
-                print(" ✅ Background task installed! It will run invisibly three times a day (12:00 AM, 7:00 AM, and 2:00 PM).")
+                print(" ✅ Background task installed! It will run invisibly three times a day (12:00 AM, 8:00 AM, and 4:00 PM).")
             else:
                 print(" ⚠️  Could not auto-install background task (run terminal as Administrator if you want it).")
         except Exception:
             print(" ⚠️  Could not auto-install background task.")
     else:
         # Mac/Linux: use crontab
-        run_sh_path = os.path.join(base_dir, 'run.sh')
+        python_path = os.path.join(base_dir, '.venv', 'bin', 'python3')
+        main_path = os.path.join(base_dir, 'main.py')
         try:
-            os.chmod(run_sh_path, 0o755) # Make executable
-            cron_job = f"0 0,7,14 * * * cd '{base_dir}' && ./run.sh --background"
+            cron_job = f"0 0,8,16 * * * cd '{base_dir}' && '{python_path}' '{main_path}' --background"
             cmd = f"(crontab -l 2>/dev/null | grep -v 'ContestPilot'; echo \"{cron_job} # ContestPilot\") | crontab -"
             result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
             if result.returncode == 0:
-                print(" ✅ Background task installed! It will run silently three times a day (12:00 AM, 7:00 AM, and 2:00 PM) via cron.")
+                print(" ✅ Background task installed! It will run silently three times a day (12:00 AM, 8:00 AM, and 4:00 PM) via cron.")
             else:
                 print(" ⚠️  Could not auto-install background task via crontab.")
         except Exception:
@@ -129,13 +190,9 @@ def run_setup_wizard():
     print("=========================================\n")
 def main():
     if '--background' in sys.argv:
-        # Redirect all prints to a log file so pythonw doesn't crash on missing stdout/stderr
-        import os, sys
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        log_path = os.path.join(base_dir, 'background.log')
-        sys.stdout = open(log_path, 'a', encoding='utf-8')
-        sys.stderr = sys.stdout
-        
+        # stdout/stderr already redirected at module top; just verify
+        pass
+
     if '--setup-email' in sys.argv:
         run_email_setup()
         return

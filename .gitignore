@@ -13,18 +13,25 @@ __pycache__/
 .vscode/
 .idea/
 
-# Database
+# Database (user-specific, generated on first run)
 *.db
 *.sqlite3
-contestpilot.db
 
-# Secrets
+# Secrets (user-specific OAuth tokens)
 token.json
 credentials.json
 
-# Scratch / Logs
+# Logs
 *.log
-scratch/
+
+# Temporary / Debug files
+*.xml
+debug_*.py
+check_*.py
+register_task.py
+setup.py
+
+# Internal documentation (not needed for users)
 PROJECT_EXPLANATION.md
 ARCHITECTURE_NOTES.md
 *_explained.py
