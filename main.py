@@ -28,6 +28,11 @@ from contestpilot.calendar_sync import sync_calendar
 from contestpilot.email_sync import process_email_notifications
 from contestpilot.setup_email import run_email_setup
 from contestpilot.attendance_verifier import run_auto_verification
+from contestpilot.update_checker import (
+    check_for_updates,
+    check_for_updates_background,
+    notify_if_update_pending,
+)
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
@@ -194,6 +199,10 @@ def main():
         # stdout/stderr already redirected at module top; just verify
         pass
 
+    if '--check-update' in sys.argv:
+        check_for_updates(silent=False)
+        return
+
     if '--setup-email' in sys.argv:
         run_email_setup()
         return
@@ -295,6 +304,15 @@ def main():
     if not is_initialized():
         run_setup_wizard()
     
+    # --- Update check (runs differently in background vs interactive) ---
+    if '--background' in sys.argv:
+        try:
+            check_for_updates_background()
+        except Exception:
+            pass  # Never let update check crash the main sync
+    else:
+        notify_if_update_pending()
+
     tz = get_preference('timezone')
     print(f"\n⚡ [ContestPilot] Waking up... (Timezone: {tz})")
     
