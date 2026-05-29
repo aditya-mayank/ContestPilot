@@ -3,6 +3,6 @@ cd /d "%~dp0..\.."
 echo =========================================
 echo    ContestPilot - Manual Attendance Review
 echo =========================================
-echo (This will only ask you about contests that couldn't be auto-verified, like CodeChef)
+echo (Contests are auto-verified, but you can use this to manually review or verify them)
 call run.bat --review
 pause
