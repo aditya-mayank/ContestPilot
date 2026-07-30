@@ -24,12 +24,26 @@ def get_credentials() -> Credentials:
     """Gets valid user credentials from storage or initiates OAuth flow."""
     creds = None
     if os.path.exists(TOKEN_FILE):
-        creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+        try:
+            creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+        except Exception as e:
+            logger.warning(f"Could not load stored token: {e}")
+            creds = None
     
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except Exception as e:
+                logger.warning(f"Google OAuth refresh token expired or invalid ({e}). Requesting re-authorization...")
+                if os.path.exists(TOKEN_FILE):
+                    try:
+                        os.remove(TOKEN_FILE)
+                    except OSError:
+                        pass
+                creds = None
+
+        if not creds or not creds.valid:
             if not os.path.exists(CREDENTIALS_FILE):
                 logger.info("\n=== Google Calendar Setup Required ===")
                 logger.info("To enable Google Calendar syncing, you need OAuth credentials.")
@@ -39,12 +53,20 @@ def get_credentials() -> Credentials:
                 logger.info("4. Download the JSON file, name it 'credentials.json', and place it in the ContestPilot folder.")
                 logger.info("======================================\n")
                 return None
-            flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
-            creds = flow.run_local_server(port=0)
+            try:
+                flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
+                creds = flow.run_local_server(port=0)
+            except Exception as e:
+                logger.error(f"OAuth authorization flow failed: {e}")
+                return None
         
         # Save the credentials for the next run
-        with open(TOKEN_FILE, 'w') as token:
-            token.write(creds.to_json())
+        if creds:
+            try:
+                with open(TOKEN_FILE, 'w') as token:
+                    token.write(creds.to_json())
+            except Exception as e:
+                logger.error(f"Could not save token file: {e}")
             
     return creds
 
@@ -121,12 +143,21 @@ def get_upcoming_contests_with_rankings() -> List[dict]:
 
 def sync_calendar():
     """Main sync function to push events to Google Calendar."""
-    creds = get_credentials()
+    try:
+        creds = get_credentials()
+    except Exception as e:
+        logger.error(f"Failed to obtain calendar credentials: {e}")
+        return
+
     if not creds:
         return
         
-    service = build('calendar', 'v3', credentials=creds)
-    contests = get_upcoming_contests_with_rankings()
+    try:
+        service = build('calendar', 'v3', credentials=creds)
+        contests = get_upcoming_contests_with_rankings()
+    except Exception as e:
+        logger.error(f"Failed to initialize calendar service or fetch contests: {e}")
+        return
     
     print(f" 📅 Pushing {len(contests)} contests to Google Calendar...")
     synced_count = 0
@@ -157,7 +188,12 @@ def sync_calendar():
 
 def clear_all_contests():
     """Hunts down and deletes all ContestPilot events from Google Calendar."""
-    creds = get_credentials()
+    try:
+        creds = get_credentials()
+    except Exception as e:
+        logger.error(f"Failed to obtain calendar credentials: {e}")
+        return
+
     if not creds:
         print(" [Error] Cannot access Calendar. No credentials found.")
         return
