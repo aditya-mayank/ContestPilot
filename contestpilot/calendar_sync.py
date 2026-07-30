@@ -2,14 +2,14 @@ import os
 import base64
 import logging
 from typing import List, Dict, Any
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+from google.oauth2.credentials import Credentials  # type: ignore
+from google_auth_oauthlib.flow import InstalledAppFlow  # type: ignore
+from google.auth.transport.requests import Request  # type: ignore
+from googleapiclient.discovery import build  # type: ignore
+from googleapiclient.errors import HttpError  # type: ignore
 import datetime
 
-from .database import get_connection
+from .database import get_connection  # type: ignore
 
 logger = logging.getLogger(__name__)
 
