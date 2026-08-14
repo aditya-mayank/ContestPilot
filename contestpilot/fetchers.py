@@ -3,6 +3,8 @@ import requests
 import json
 import datetime
 from typing import List, Dict, Any, Optional
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry  # type: ignore
 
 from .models import Contest
 from .database import get_preference, get_api_cache, set_api_cache, save_contest, save_ranking
@@ -12,10 +14,6 @@ from .ranking import rank_contest
 logger = logging.getLogger(__name__)
 
 CACHE_EXPIRY_SECONDS = 3600  # 1 hour
-
-
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
 def get_requests_session() -> requests.Session:
     session = requests.Session()
@@ -292,7 +290,7 @@ def sync_all_fetchers():
     if canceled_ids:
         from .database import log_history
         import datetime
-        from tzlocal import get_localzone
+        from tzlocal import get_localzone #type: ignore
         now = datetime.datetime.now(datetime.timezone.utc)
         
         for cid in canceled_ids:

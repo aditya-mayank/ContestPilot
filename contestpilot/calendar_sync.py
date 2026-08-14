@@ -54,6 +54,13 @@ def get_credentials() -> Credentials:
                 logger.info("======================================\n")
                 return None
             try:
+                import sys
+                if '--background' in sys.argv:
+                    logger.error("OAuth token invalid and running in background mode. Skipping interactive auth to prevent hang.")
+                    from .database import queue_notification
+                    queue_notification('SYSTEM', 'auth_failed', '⚠️ Google Calendar Sync paused because your authorization token expired.\n\nPlease manually run "run.bat" to re-authenticate with Google so ContestPilot can continue updating your calendar.')
+                    return None
+
                 flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
                 creds = flow.run_local_server(port=0)
             except Exception as e:
